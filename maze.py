@@ -10,8 +10,7 @@ class PlayerMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerMovement, self).__init__(script_name)
-        self.h_speed = 200
-        self.v_speed = 300
+        self.speed = 200.0
 
     def update(self):
 
@@ -20,16 +19,28 @@ class PlayerMovement(BehaviorScript):
         velocity = self.entity.rigid_body.velocity
 
         if keys[pygame.K_a]:
-            velocity.x = -self.h_speed
+            velocity.x = -self.speed
 
         elif keys[pygame.K_d]:
-            velocity.x = self.h_speed
+            velocity.x = self.speed
+
+        else:
+            velocity.x = 0
+
+        if keys[pygame.K_w]:
+            velocity.y = -self.speed
+
+        elif keys[pygame.K_s]:
+            velocity.y = self.speed
+
+        else:
+            velocity.y = 0
 
     def take_input(self, event):
-
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                self.entity.rigid_body.velocity.y = -self.v_speed
+        pass
+        # if event.type == pygame.KEYDOWN:
+        #     if event.key == pygame.K_SPACE:
+        #         self.entity.rigid_body.velocity.y = -self.v_speed
 
 
 def create_wall(c1, c2):
@@ -79,6 +90,8 @@ class Maze(World):
 
     def load_scene(self):
 
+        PhysicsSystem.gravity.zero()
+
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
         background_image = pygame.Surface((w, h))
@@ -122,7 +135,7 @@ class Maze(World):
         animation.add_frame(frame4)
 
         # set time between frames in seconds
-        animation.frame_latency = 0.01
+        animation.frame_latency = 0.1
 
         # set the first animation
         animator = Animator()
@@ -208,6 +221,7 @@ class Maze(World):
         list_coordinates.append((13, 7))  # 63
         list_coordinates.append((12, 8))  # 64
         list_coordinates.append((13, 8))  # 65
+
         # lever 1
         list_coordinates.append((14, 8))  # 66
         list_coordinates.append((15, 8))  # 67
@@ -348,5 +362,6 @@ class PlayerBehavior (BehaviorScript):
         # hits wall
         if other_entity.tag == "wall":
             pass
+
 engine.set_world(Maze())
 engine.run()
