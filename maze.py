@@ -437,21 +437,47 @@ class Maze(World):
 class PlayerBehavior (BehaviorScript):
     def __init__(self, script_name):
         super(PlayerBehavior, self).__init__(script_name)
+        self.touchedlver1 = False
+        self.touchedlver2 = False
+        self.touchedlver3 = False
+        self.touchedlver4 = False
+        self.touchedlver5 = False
+        self.touchedlver6 = False
 
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
         # hits lever 1-6
         if other_entity.tag == "lever1":
             print "You hit lever 1!"
+            self.touchedlver1 = True
         elif other_entity.tag == "lever2":
             print "You hit lever 2!"
+            self.touchedlver2 = True
         elif other_entity.tag == "lever3":
             print "You hit lever 3!"
+            self.touchedlver3 = True
         elif other_entity.tag == "lever4":
             print "You hit lever 4!"
+            self.touchedlver4 = True
         elif other_entity.tag == "lever5":
             print "You hit lever 5!"
+            self.touchedlver5 = True
         elif other_entity.tag == "lever6":
             print "You hit lever 6!"
+            self.touchedlver6 = True
+
+        if other_entity.tag == "blocked1" and self.touchedlver1 is True:
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "blocked2" and self.touchedlver2 is True:
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "blocked3" and self.touchedlver3 is True:
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "blocked4" and self.touchedlver4 is True:
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "blocked5" and self.touchedlver5 is True:
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "blocked6" and self.touchedlver6 is True:
+            self.entity.world.destroy_entity(other_entity)
+
 engine.set_world(Maze())
 engine.run()
