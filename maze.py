@@ -391,8 +391,8 @@ class Maze(World):
         coordinates.append((7, 13))   # 152
         coordinates.append((6, 13))   # 153
         coordinates.append((6, 11))   # 154
-        # coordinates.append((5, 11))   # 155
-        coordinates.append((4, 12))   # 156
+        coordinates.append((5, 11))   # 155
+        # coordinates.append((4, 12))   # 156
         coordinates.append((4, 13))   # 157
         coordinates.append((3, 13))   # 158
         coordinates.append((2, 13))   # 159
