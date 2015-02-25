@@ -7,13 +7,12 @@ from components import WorldScript
 engine = Engine(1200, 700)
 
 
-
 class CheckBoxes(WorldScript):
 
         def __init__(self, script_name):
             super(CheckBoxes, self).__init__(script_name)
                 
-            #list of coordinates of where box is supposed to be
+            # list of coordinates of where box is supposed to be
             self.boxCoordinates = dict()
 
             # these are the boxes and their corresponding position followed by a snapped boolean 
@@ -25,22 +24,26 @@ class CheckBoxes(WorldScript):
             self.boxCoordinates["pbox5"] = (Vector2(400, 425), False)
             self.boxCoordinates["pbox6"] = (Vector2(725, 350), False)
 
-
         def update(self):
 
-
             for box in self.world.boxes:
-                if not self.boxCoordinates[box.tag][1]:
+
+                # get the boolean snap flag
+                snapped = self.boxCoordinates[box.tag][1]
+
+                if not snapped:
                     tgt_position = self.boxCoordinates[box.tag][0]
 
                     tgt_distance = box.transform.position - tgt_position
-                    if tgt_distance.sq_magnitude()< 100 :
+                    if tgt_distance.sq_magnitude() < 100:
                         if box.rigid_body is not None:
                             box.remove_component(RigidBody.tag)
-                        box.transform.position=tgt_position
-                
-                pygame.draw.circle(self.world.engine.display, (255,255,255), (tgt_position.x, tgt_position.y), 2)
+                        box.transform.position = tgt_position
 
+                        # set snap to true
+                        self.boxCoordinates[box.tag] = (None, True)
+
+                    pygame.draw.circle(self.world.engine.display, (255, 255, 255), (tgt_position.x, tgt_position.y), 2)
 
 
 class PlayerMovement(BehaviorScript):
@@ -80,9 +83,9 @@ class PlayerMovement(BehaviorScript):
         # in the right place
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-            
                 # check to see if next to a box that you can gra
                 pass
+
     def collision_event(self, other_collider):
 
         other_entity = other_collider.entity
@@ -90,9 +93,10 @@ class PlayerMovement(BehaviorScript):
         # move the brick
         if other_entity.tag == "pbox": 
             # check to see if next to a box that you can grab
-            #other_collidessr.velocity = self.velocity
+            # other_collidessr.velocity = self.velocity
             pass
-            
+
+
 class PlatformWorld(World):
 
     def __init__(self):
@@ -114,7 +118,7 @@ class PlatformWorld(World):
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
 
-        background_image = paddle_image = pygame.image.load("assets/images/WoodenFloor.png").convert()
+        background_image = pygame.image.load("assets/images/WoodenFloor.png").convert()
 
         # add necessary components to be able to position and render 
         # the background
