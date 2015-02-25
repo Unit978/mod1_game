@@ -421,7 +421,7 @@ class Maze(World):
         coordinates.append((7, 8))   # 182
         coordinates.append((6, 8))   # 183
         coordinates.append((4, 11))   # 184
-        coordinates.append((5, 11))   # 185
+        # coordinates.append((5, 11))   # 185
 
         # static walls for maze
         for i in coordinates:
