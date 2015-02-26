@@ -119,6 +119,8 @@ class PlayerPlatformMovement(BehaviorScript):
 
         self.grounded = True
 
+        self.changed_direction = False
+
         self.holding_crate = False
 
     def update(self):
@@ -142,6 +144,33 @@ class PlayerPlatformMovement(BehaviorScript):
     def take_input(self, event):
 
         if event.type == pygame.KEYDOWN:
+
+            x_scale = self.entity.transform.scale.x
+            y_scale = self.entity.transform.scale.y
+
+            # change orientation of the transform based on where the player is facing.
+            if event.key == pygame.K_a:
+                # was facing right
+                if x_scale > 0:
+                    self.changed_direction = True
+                else:
+                    self.changed_direction = False
+
+                # if the player changed direction then flip the transform on the x-axis
+                if self.changed_direction:
+                    self.entity.transform.scale_by(-abs(x_scale), y_scale)
+                    self.changed_direction = False
+
+            elif event.key == pygame.K_d:
+                # was facing left
+                if x_scale < 0:
+                    self.changed_direction = True
+                else:
+                    self.changed_direction = False
+
+                # flip the transform if the player changed direction
+                if self.changed_direction:
+                    self.entity.transform.scale_by(abs(x_scale), y_scale)
 
             # check that we are grounded
             # if event.key == pygame.K_SPACE and self.grounded :
@@ -219,8 +248,6 @@ class PlayerClimbing(BehaviorScript):
         if other_collider.entity.tag == "ladder":
 
             grounded = self.entity.get_script("player plat move").grounded
-
-            print(grounded)
 
             if not grounded:
                 self.entity.rigid_body.velocity.y = 0
