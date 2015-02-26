@@ -6,6 +6,47 @@ from components import BehaviorScript
 engine = Engine(1200, 700)
 
 
+class CameraFollow(BehaviorScript):
+
+    def __init__(self, script_name, target_transform, cam_width, cam_height):
+        super(CameraFollow, self).__init__(script_name)
+        self.target_transform = target_transform
+        self.width = cam_width
+        self.height = cam_height
+
+    def update(self):
+
+        # center the target transform in the middle of the camera
+        x = self.target_transform.position.x - self.width/2
+        y = self.target_transform.position.y - self.height/2
+
+        renderer = self.target_transform.entity.renderer
+
+        # center around the image attached to the target transform
+        if renderer is not None:
+            x += renderer.sprite.get_width()/2
+            y += renderer.sprite.get_height()/2
+
+        world = self.entity.world
+
+        # keep camera within world bounds
+        if world.is_bounded():
+            if x < world.origin.x:
+                x = world.origin.x
+
+            elif x > world.origin.x + world.width - self.width:
+                x = world.origin.x + world.width - self.width
+
+            if y < world.origin.y:
+                y = world.origin.y
+
+            elif y > world.origin.y + world.height - self.height:
+                y = world.origin.y + world.height - self.height
+
+        # set the camera position accordingly
+        self.entity.transform.position = Vector2(x, y)
+
+
 class PlayerMovement(BehaviorScript):
 
     def __init__(self, script_name):
@@ -428,6 +469,10 @@ class Maze(World):
             self.construct_wall(i)
 
         self.player.add_script(PlayerBehavior("player behavior"))
+        render = self.get_system(RenderSystem.tag)
+        render.camera = self.create_entity()
+        render.camera.add_component(Transform(Vector2(0, 0)))
+        render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
         # create levers to be triggered by player
         self.construct_levers()
         # create blocked path walls
