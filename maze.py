@@ -3,85 +3,10 @@ from world import *
 from engine import *
 from components import BehaviorScript
 
+from scripts import CameraFollow
+from scripts import PlayerTopDownMovement
+
 engine = Engine(1200, 700)
-
-
-class CameraFollow(BehaviorScript):
-
-    def __init__(self, script_name, target_transform, cam_width, cam_height):
-        super(CameraFollow, self).__init__(script_name)
-        self.target_transform = target_transform
-        self.width = cam_width
-        self.height = cam_height
-
-    def update(self):
-
-        # center the target transform in the middle of the camera
-        x = self.target_transform.position.x - self.width/2
-        y = self.target_transform.position.y - self.height/2
-
-        renderer = self.target_transform.entity.renderer
-
-        # center around the image attached to the target transform
-        if renderer is not None:
-            x += renderer.sprite.get_width()/2
-            y += renderer.sprite.get_height()/2
-
-        world = self.entity.world
-
-        # keep camera within world bounds
-        if world.is_bounded():
-            if x < world.origin.x:
-                x = world.origin.x
-
-            elif x > world.origin.x + world.width - self.width:
-                x = world.origin.x + world.width - self.width
-
-            if y < world.origin.y:
-                y = world.origin.y
-
-            elif y > world.origin.y + world.height - self.height:
-                y = world.origin.y + world.height - self.height
-
-        # set the camera position accordingly
-        self.entity.transform.position = Vector2(x, y)
-
-
-class PlayerMovement(BehaviorScript):
-
-    def __init__(self, script_name):
-        super(PlayerMovement, self).__init__(script_name)
-        self.speed = 200.0
-
-    def update(self):
-
-        keys = pygame.key.get_pressed()
-
-        velocity = self.entity.rigid_body.velocity
-
-        if keys[pygame.K_a]:
-            velocity.x = -self.speed
-
-        elif keys[pygame.K_d]:
-            velocity.x = self.speed
-
-        else:
-            velocity.x = 0
-
-        if keys[pygame.K_w]:
-            velocity.y = -self.speed
-
-        elif keys[pygame.K_s]:
-            velocity.y = self.speed
-
-        else:
-            velocity.y = 0
-
-    def take_input(self, event):
-        pass
-        # if event.type == pygame.KEYDOWN:
-        #     if event.key == pygame.K_SPACE:
-        #         self.entity.rigid_body.velocity.y = -self.v_speed
 
 
 def create_blocked_wall(c1, c2):
@@ -245,7 +170,7 @@ class Maze(World):
         self.player.transform.position = Vector2(100, 100)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
-        self.player.add_script(PlayerMovement("player_move"))
+        self.player.add_script(PlayerTopDownMovement("player move"))
         self.player.collider.restitution = 1
 
         # set up animation

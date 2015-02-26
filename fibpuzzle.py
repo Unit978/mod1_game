@@ -1,9 +1,11 @@
 
 from world import *
 from engine import *
-from random import randrange
-from components import BehaviorScript
+
 from components import WorldScript
+
+from scripts import PlayerTopDownMovement
+
 engine = Engine(1200, 700)
 
 
@@ -44,57 +46,6 @@ class CheckBoxes(WorldScript):
                         self.boxCoordinates[box.tag] = (None, True)
 
                     pygame.draw.circle(self.world.engine.display, (255, 255, 255), (tgt_position.x, tgt_position.y), 2)
-
-
-class PlayerMovement(BehaviorScript):
-
-    def __init__(self, script_name):
-        super(PlayerMovement, self).__init__(script_name)
-        self.h_speed = 200
-        self.v_speed = 300
-
-    def update(self):
-
-        keys = pygame.key.get_pressed()
-
-        velocity = self.entity.rigid_body.velocity
-
-        if keys[pygame.K_a]:
-            velocity.x = -self.h_speed
-
-        elif keys[pygame.K_d]:
-            velocity.x = self.h_speed
-
-        else: 
-            velocity.x = 0 
-
-        if keys[pygame.K_w]:
-            velocity.y = -self.h_speed
-
-        elif keys[pygame.K_s]:
-            velocity.y = self.h_speed
-
-        else:
-            velocity.y = 0
-
-    def take_input(self, event):
-
-        # this should grab a box in order to move it and position it 
-        # in the right place
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                # check to see if next to a box that you can gra
-                pass
-
-    def collision_event(self, other_collider):
-
-        other_entity = other_collider.entity
-
-        # move the brick
-        if other_entity.tag == "pbox": 
-            # check to see if next to a box that you can grab
-            # other_collidessr.velocity = self.velocity
-            pass
 
 
 class PlatformWorld(World):
@@ -145,7 +96,7 @@ class PlatformWorld(World):
         self.player.transform.position = Vector2(100, 100)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
-        self.player.add_script(PlayerMovement("player_move"))
+        self.player.add_script(PlayerTopDownMovement("player move"))
         self.player.collider.restitution = 1
 
         # set up animation
