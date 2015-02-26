@@ -225,7 +225,7 @@ class Maze(World):
         self.background.add_component(Transform(Vector2(0, 0)))
         self.background.add_component(Renderer(background_image))
         self.background.renderer.depth = 100
-
+        self.background.renderer.is_static = True
         # frames to demonstrate animation
         frame1 = pygame.Surface((20, 20)).convert()
         frame1.fill((255, 0, 0))
