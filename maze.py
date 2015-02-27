@@ -223,7 +223,10 @@ class Maze(World):
         background_image.fill((12, 0, 40))
 
         # add necessary components to be able to position and render the background
-        # box_image = pygame.image.load("assets/images/WoodenFloor.png").convert_alpha()
+        background_image = pygame.image.load("assets/images/WoodenFloor.png").convert()
+
+        # add necessary components to be able to position and render
+        # the background
         self.background = self.create_entity()
         self.background.add_component(Transform(Vector2(0, 0)))
         self.background.add_component(Renderer(background_image))
@@ -245,7 +248,7 @@ class Maze(World):
         self.player = self.create_game_object(frame1)
         self.player.add_component(RigidBody())
         # self.player.transform.position = Vector2(0, 0)
-        self.player.transform.position = Vector2(800, 400)
+        self.player.transform.position = Vector2(0, 0)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
         self.player.add_script(PlayerMovement("player_move"))
@@ -496,7 +499,7 @@ class Maze(World):
         coordinates.append((17, 13))
         coordinates.append((17, 14))
 
-
+        coordinates.append((27, 13))
         # =========================================Perimeter=======================================
 
         # top perimeter
