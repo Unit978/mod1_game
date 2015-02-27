@@ -269,7 +269,7 @@ class Maze(World):
 
         # add animator to player
         self.player.add_component(animator)
-
+        # =============================================Static Maze Tiles==========================
         # create maze walls
         coordinates = []
         coordinates.append((0, 1))  # 1
@@ -475,6 +475,30 @@ class Maze(World):
         coordinates.append((27, -1))
         # blocked wall 7
         coordinates.append((23, 7))
+
+        coordinates.append((26, 6))
+        coordinates.append((26, 7))
+        coordinates.append((26, 8))
+        coordinates.append((27, 8))
+        coordinates.append((28, 8))
+        coordinates.append((28, 9))
+        coordinates.append((28, 10))
+
+        coordinates.append((26, 10))
+        coordinates.append((26, 11))
+        coordinates.append((26, 12))
+        coordinates.append((27, 12))
+        coordinates.append((26, 13))
+        coordinates.append((24, 14))
+        coordinates.append((22, 13))
+        coordinates.append((20, 14))
+        coordinates.append((18, 13))
+        coordinates.append((17, 13))
+        coordinates.append((17, 14))
+
+
+        # =========================================Perimeter=======================================
+
         # top perimeter
         for i in range(-1, 42):
             coordinates.append((i, -2))
