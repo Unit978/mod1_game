@@ -4,6 +4,8 @@ from engine import *
 from components import BehaviorScript
 
 engine = Engine(1200, 700)
+scale_x = 28
+scale_y = 50
 
 
 class CameraFollow(BehaviorScript):
@@ -85,25 +87,25 @@ class PlayerMovement(BehaviorScript):
 
 
 def create_blocked_wall(c1, c2):
-        lever = pygame.Surface(((c2[0]-c1[0])*28, (c2[1]-c1[1])*50)).convert()
+        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
         lever.fill((0, 255, 0))
         return lever
 
 
 def create_lever(c1, c2):
-        lever = pygame.Surface(((c2[0]-c1[0])*28, (c2[1]-c1[1])*50)).convert()
+        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
         lever.fill((255, 0, 0))
         return lever
 
 
 def create_wall(c1, c2):
-        wall = pygame.Surface(((c2[0]-c1[0])*28, (c2[1]-c1[1])*50)).convert()
+        wall = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
         wall.fill((255, 255, 255))
         return wall
 
 
 def find_coordinate(c):
-        coordinate = c[0]*28, c[1]*50
+        coordinate = c[0]*scale_x, c[1]*scale_y
         return coordinate
 
 
@@ -221,6 +223,7 @@ class Maze(World):
         background_image.fill((12, 0, 40))
 
         # add necessary components to be able to position and render the background
+        # box_image = pygame.image.load("assets/images/WoodenFloor.png").convert_alpha()
         self.background = self.create_entity()
         self.background.add_component(Transform(Vector2(0, 0)))
         self.background.add_component(Renderer(background_image))
@@ -241,7 +244,7 @@ class Maze(World):
 
         self.player = self.create_game_object(frame1)
         self.player.add_component(RigidBody())
-        self.player.transform.position = Vector2(100, 100)
+        self.player.transform.position = Vector2(0, 0)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
         self.player.add_script(PlayerMovement("player_move"))
@@ -266,16 +269,6 @@ class Maze(World):
         # add animator to player
         self.player.add_component(animator)
 
-        # create border walls
-        self.topWall = self.create_box_collider_object(w*2, 1)
-        self.bottomWall = self.create_box_collider_object(w*2, 1)
-        self.leftWall = self.create_box_collider_object(1, h*2)
-        self.rightWall = self.create_box_collider_object(1, h*2)
-
-        # set up border wall positions
-        self.bottomWall.transform.position = Vector2(0, h)
-        self.leftWall.transform.position = Vector2(0, h/2-50)
-        self.rightWall.transform.position = Vector2(w, h/2+50)
         # create maze walls
         coordinates = []
         coordinates.append((0, 1))  # 1
@@ -461,8 +454,20 @@ class Maze(World):
         coordinates.append((7, 9))   # 181
         coordinates.append((7, 8))   # 182
         coordinates.append((6, 8))   # 183
-        coordinates.append((4, 11))   # 184
-        # coordinates.append((5, 11))   # 185
+
+        # top perimeter
+        for i in range(-1, 42):
+            coordinates.append((i, -2))
+        # bottom perimeter
+        for i in range(-1, 42):
+            coordinates.append((i, 15))
+        # left perimeter wall
+        for i in range(-2, 16):
+            coordinates.append((-2, i))
+
+        # right perimeter wall
+        for i in range(-2, 16):
+            coordinates.append((42, i))
 
         # static walls for maze
         for i in coordinates:
