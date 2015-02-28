@@ -61,9 +61,14 @@ class PlatformWorld(World):
 
     def load_ladders(self):
         ladder_color = (200, 200, 200)
-        ladder_img = pygame.Surface((50, 440)).convert()
-        ladder_img.fill(ladder_color)
-        ladder1 = self.create_game_object(ladder_img)
+
+        path = "assets/images/ladders/"
+        load = pygame.image.load
+        ladder_body_tile = load(path + "ladder_body.png").convert_alpha()
+
+        img = create_img_from_tile(ladder_body_tile, 46, 440)
+
+        ladder1 = self.create_game_object(img)
         ladder1.collider.is_trigger = True
         ladder1.transform.position = Vector2(950, 395)
         ladder1.tag = "ladder"
@@ -155,8 +160,6 @@ class PlatformWorld(World):
         set_wall_attributes(wall_e)
 
     def load_floors(self):
-
-        floor_color = (50, 50, 50)
 
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
@@ -256,7 +259,7 @@ class PlatformWorld(World):
             platform.collider.treat_as_dynamic = True
 
     def load_boxes(self):
-        box_img = pygame.image.load("assets/images/green_block.png").convert_alpha()
+        box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
 
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(900, 300)
@@ -373,7 +376,13 @@ def create_img_from_tile(tile_surface, width, height):
     tile_w = tile_surface.get_width()
     tile_h = tile_surface.get_height()
 
-    dst_surface = pygame.Surface((width, height)).convert()
+    size = (width, height)
+    dst_surface = pygame.Surface(size).convert()
+
+    # make the dst_surface transparent
+    color_mask = (123, 54, 33)
+    dst_surface.fill(color_mask)
+    dst_surface.set_colorkey(color_mask)
 
     # fill the dst_surface horizontally first with the tile, once we get to the edge
     # go down a column and repeat.
