@@ -60,18 +60,14 @@ class PlatformWorld(World):
         mixer.music.set_volume(0.5)
 
     def load_ladders(self):
-        ladder_color = (200, 200, 200)
-
         path = "assets/images/ladders/"
         load = pygame.image.load
-        ladder_body_tile = load(path + "ladder_body.png").convert_alpha()
+        ladder_body = load(path + "ladder_body.png").convert_alpha()
+        ladder_top = load(path + "ladder_top.png").convert_alpha()
 
-        img = create_img_from_tile(ladder_body_tile, 46, 440)
-
-        ladder1 = self.create_game_object(img)
-        ladder1.collider.is_trigger = True
-        ladder1.transform.position = Vector2(950, 395)
-        ladder1.tag = "ladder"
+        create_ladder(self, ladder_body, ladder_top, 440, 950, 395)
+        create_ladder(self, ladder_body, ladder_top, 270, 1650, 25)
+        create_ladder(self, ladder_body, ladder_top, 410, 1920, 395)
 
     def load_platforms(self):
 
@@ -271,7 +267,7 @@ class PlatformWorld(World):
 
         box.add_component(RigidBody())
         box.rigid_body.velocity = Vector2(0.0, 0.0)
-        box.rigid_body.gravity_scale = 1
+        box.rigid_body.gravity_scale = 2
         box.tag = "box"
 
     def load_anims(self):
@@ -328,6 +324,22 @@ def set_platform_attributes(platform):
     platform.collider.restitution = 0
     platform.collider.surface_friction = 0.75
     platform.tag = "platform"
+
+
+def create_ladder(world, ladder_body, ladder_top, height, x, y):
+    img = create_img_from_tile(ladder_body, ladder_body.get_width(), height)
+
+    # pad image on top of the ladder
+    img = conjoin_surfaces_vertically(ladder_top, img)
+
+    ladder1 = world.create_game_object(img)
+    ladder1.collider.is_trigger = True
+    ladder1.transform.position = Vector2(x, y)
+
+    ladder1.collider.box.w -= 80
+    ladder1.collider.box.h -= 50
+
+    ladder1.tag = "ladder"
 
 
 def get_files_in_dir(dir_path):
@@ -391,6 +403,30 @@ def create_img_from_tile(tile_surface, width, height):
             dst_surface.blit(tile_surface, (x, y))
 
     return dst_surface
+
+
+# conjoins surface b on the bottom of surface a
+def conjoin_surfaces_vertically(surface_a, surface_b):
+    width = max(surface_a.get_width(), surface_b.get_width())
+    height = surface_a.get_height() + surface_b.get_height()
+
+    size = (width, height)
+    dst_surface = pygame.Surface(size).convert()
+
+    # make the dst_surface transparent
+    color_mask = (123, 54, 33)
+    dst_surface.fill(color_mask)
+    dst_surface.set_colorkey(color_mask)
+
+    # center each surface relative to the destination surface
+    center_a = width/2 - surface_a.get_width()/2
+    center_b = width/2 - surface_b.get_width()/2
+
+    dst_surface.blit(surface_a, (center_a, 0))
+    dst_surface.blit(surface_b, (center_b, surface_a.get_height()))
+
+    return dst_surface
+
 
 engine.set_world(PlatformWorld())
 engine.run()
