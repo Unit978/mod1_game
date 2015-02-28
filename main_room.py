@@ -8,6 +8,9 @@ import re
 
 engine = Engine(1200, 700)
 
+# load music to play in the background
+background_music = mixer.music.load("assets/music/MarysCreepyCarnivalTheme.mp3")
+
 
 class PlatformWorld(World):
 
@@ -52,6 +55,10 @@ class PlatformWorld(World):
         render.camera.add_component(Transform(Vector2(0, 0)))
         render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
 
+        # start the background music and set it to loop forever
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.5)
+
     def load_ladders(self):
         ladder_color = (200, 200, 200)
         ladder_img = pygame.Surface((50, 440)).convert()
@@ -63,85 +70,87 @@ class PlatformWorld(World):
 
     def load_platforms(self):
 
-        plat_color = (30, 30, 30)
+        path = "assets/images/platforms/"
 
-        img = RenderSystem.create_solid_image(200, 30, plat_color)
-        plat_a = self.create_game_object(img)
+        load = pygame.image.load
+
+        img_200x30 = load(path + "30x200.png").convert_alpha()
+        img_400x30 = load(path + "30x400.png").convert_alpha()
+        img_250x50 = load(path + "50x250.png").convert_alpha()
+        img_400x120 = load(path + "120x400.png").convert_alpha()
+        img_300x30 = load(path + "30x300.png").convert_alpha()
+        img_800x150 = load(path + "150x800.png").convert_alpha()
+        img_300x50 = load(path + "50x300.png").convert_alpha()
+
+        plat_a = self.create_game_object(img_200x30)
         plat_a.transform.position = Vector2(300, 250)
         set_platform_attributes(plat_a)
 
-        img = RenderSystem.create_solid_image(400, 30, plat_color)
-        plat_b = self.create_game_object(img)
+        plat_b = self.create_game_object(img_400x30)
         plat_b.transform.position = Vector2(400, 400)
         set_platform_attributes(plat_b)
 
-        img = RenderSystem.create_solid_image(250, 50, plat_color)
-        plat_c = self.create_game_object(img)
+        plat_c = self.create_game_object(img_250x50)
         plat_c.transform.position = Vector2(1100, 200)
         set_platform_attributes(plat_c)
 
-        img = RenderSystem.create_solid_image(250, 50, plat_color)
-        plat_d = self.create_game_object(img)
+        plat_d = self.create_game_object(img_250x50)
         plat_d.transform.position = Vector2(1700, 200)
         set_platform_attributes(plat_d)
 
-        img = RenderSystem.create_solid_image(250, 50, plat_color)
-        plat_e = self.create_game_object(img)
+        plat_e = self.create_game_object(img_250x50)
         plat_e.transform.position = Vector2(1500, -100)
         set_platform_attributes(plat_e)
 
-        img = RenderSystem.create_solid_image(400, 120, plat_color)
-        plat_f = self.create_game_object(img)
+        plat_f = self.create_game_object(img_400x120)
         plat_f.transform.position = Vector2(2150, 250)
         set_platform_attributes(plat_f)
 
-        img = RenderSystem.create_solid_image(200, 30, plat_color)
-        plat_g = self.create_game_object(img)
+        plat_g = self.create_game_object(img_200x30)
         plat_g.transform.position = Vector2(2250, 0)
         set_platform_attributes(plat_g)
 
-        img = RenderSystem.create_solid_image(300, 30, plat_color)
-        plat_h = self.create_game_object(img)
+        plat_h = self.create_game_object(img_300x30)
         plat_h.transform.position = Vector2(1800, -150)
         set_platform_attributes(plat_h)
         plat_h.add_script(PlatformMovement("plat move"))
 
-        img = RenderSystem.create_solid_image(800, 150, plat_color)
-        plat_i = self.create_game_object(img)
+        plat_i = self.create_game_object(img_800x150)
         plat_i.transform.position = Vector2(3150, 300)
         set_platform_attributes(plat_i)
 
-        img = RenderSystem.create_solid_image(300, 50, plat_color)
-        plat_j = self.create_game_object(img)
+        plat_j = self.create_game_object(img_300x50)
         plat_j.transform.position = Vector2(4000, 120)
         set_platform_attributes(plat_j)
 
     def load_walls(self):
 
-        wall_color = (100, 100, 100)
+        path = "assets/images/walls/"
 
-        img = RenderSystem.create_solid_image(200, 500, wall_color)
-        wall_a = self.create_game_object(img)
+        load = pygame.image.load
+
+        img_200x500 = load(path + "200x500.png").convert_alpha()
+        img_200x350 = load(path + "200x350.png").convert_alpha()
+        img_200x200 = load(path + "200x200.png").convert_alpha()
+        img_600x170 = load(path + "170x600.png").convert_alpha()
+
+        wall_a = self.create_game_object(img_200x500)
         wall_a.transform.position = Vector2(100, 350)
         set_wall_attributes(wall_a)
 
-        img = RenderSystem.create_solid_image(200, 350, wall_color)
-        wall_b = self.create_game_object(img)
+        wall_b = self.create_game_object(img_200x350)
         wall_b.transform.position = Vector2(80, -200)
         set_wall_attributes(wall_b)
 
-        img = RenderSystem.create_solid_image(200, 200, wall_color)
-        wall_c = self.create_game_object(img)
+        wall_c = self.create_game_object(img_200x200)
         wall_c.transform.position = Vector2(4600, 500)
         set_wall_attributes(wall_c)
 
-        img = RenderSystem.create_solid_image(600, 170, wall_color)
-        wall_d = self.create_game_object(img)
+        wall_d = self.create_game_object(img_600x170)
         wall_d.transform.position = Vector2(4400, 180)
         set_wall_attributes(wall_d)
 
-        img = RenderSystem.create_solid_image(200, 200, wall_color)
-        wall_e = self.create_game_object(img)
+        wall_e = self.create_game_object(img_200x200)
         wall_e.transform.position = Vector2(4600, 0)
         set_wall_attributes(wall_e)
 
@@ -152,18 +161,19 @@ class PlatformWorld(World):
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
 
-        img = RenderSystem.create_solid_image(w*2, 200, floor_color)
+        floor_tile = pygame.image.load("assets/images/floor_tile.png").convert()
+
+        img = create_img_from_tile(floor_tile, w*2, 200)
         floor_a = self.create_game_object(img)
         floor_a.transform.position = Vector2(w, h)
         set_floor_attributes(floor_a)
 
-        img = RenderSystem.create_solid_image(1000, 200, floor_color)
+        img = create_img_from_tile(floor_tile, 1000, 200)
         x = w*2 + 100 + 500 + 50
         floor_b = self.create_game_object(img)
         floor_b.transform.position = Vector2(x, h)
         set_floor_attributes(floor_b)
 
-        img = RenderSystem.create_solid_image(1000, 200, floor_color)
         x += 250 + 800 + 150
         floor_c = self.create_game_object(img)
         floor_c.transform.position = Vector2(x, h)
@@ -219,15 +229,14 @@ class PlatformWorld(World):
 
     def load_elevators(self):
 
-        # select a filler color
-        plat_color = (90, 90, 90)
+        path = "assets/images/platforms/"
+
+        img_140x50 = pygame.image.load(path + "50x140.png").convert_alpha()
+        img_180x50 = pygame.image.load(path + "50x180.png").convert_alpha()
 
         # create elevator platforms
         for i in range(0, 4):
-
-            img = RenderSystem.create_solid_image(140, 50, plat_color)
-            platform = self.create_game_object(img)
-
+            platform = self.create_game_object(img_140x50)
             x = 2475
             spawn_point = Vector2(x, 700)
 
@@ -237,10 +246,7 @@ class PlatformWorld(World):
             platform.collider.treat_as_dynamic = True
 
         for i in range(0, 5):
-
-            img = RenderSystem.create_solid_image(180, 50, plat_color)
-            platform = self.create_game_object(img)
-
+            platform = self.create_game_object(img_180x50)
             x = 3650
             spawn_point = Vector2(x, 700)
 
@@ -358,6 +364,24 @@ def natural_sort(l):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
     return sorted(l, key=alphanum_key)
+
+
+# given a tile image, this function will create a quilt of tiles onto a another surface
+# given the width and height.
+def create_img_from_tile(tile_surface, width, height):
+
+    tile_w = tile_surface.get_width()
+    tile_h = tile_surface.get_height()
+
+    dst_surface = pygame.Surface((width, height)).convert()
+
+    # fill the dst_surface horizontally first with the tile, once we get to the edge
+    # go down a column and repeat.
+    for y in range(0, height, tile_h):
+        for x in range(0, width, tile_w):
+            dst_surface.blit(tile_surface, (x, y))
+
+    return dst_surface
 
 engine.set_world(PlatformWorld())
 engine.run()
