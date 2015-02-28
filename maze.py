@@ -4,8 +4,9 @@ from engine import *
 from components import BehaviorScript
 
 engine = Engine(1200, 700)
-scale_x = 28
-scale_y = 50
+scale_x = 28  # original 56
+scale_y = 50  # original 100
+tile = pygame.image.load("assets/images/56x100 tile.png").convert()
 
 
 class CameraFollow(BehaviorScript):
@@ -115,7 +116,6 @@ class Maze(World):
 
         self.player = None
         self.background = None
-        # self.tag = 'wall'
 
         # border walls
         self.topWall = None
@@ -148,30 +148,35 @@ class Maze(World):
     def construct_blocked_walls(self):
         l1c = (12, 4)
         self.blocked1 = self.create_game_object(create_blocked_wall(l1c, (l1c[0]+1, l1c[1]+1)))
+        # self.blocked1 = self.create_game_object(tile)
         self.blocked1.tag = "blocked1"
         _l1c = find_coordinate(l1c)
         self.blocked1.transform.position = Vector2(_l1c[0], _l1c[1])
 
         l2c = (24, 6)
         self.blocked2 = self.create_game_object(create_blocked_wall(l2c, (l2c[0]+1, l2c[1]+1)))
+        # self.blocked2 = self.create_game_object(tile)
         self.blocked2.tag = "blocked2"
         _l2c = find_coordinate(l2c)
         self.blocked2.transform.position = Vector2(_l2c[0], _l2c[1])
 
         l3c = (15, 11)
         self.blocked3 = self.create_game_object(create_blocked_wall(l3c, (l3c[0]+1, l3c[1]+1)))
+        # self.blocked3 = self.create_game_object(tile)
         self.blocked3.tag = "blocked3"
         _l3c = find_coordinate(l3c)
         self.blocked3.transform.position = Vector2(_l3c[0], _l3c[1])
 
         l4c = (4, 12)
         self.blocked4 = self.create_game_object(create_blocked_wall(l4c, (l4c[0]+1, l4c[1]+1)))
+        # self.blocked4 = self.create_game_object(tile)
         self.blocked4.tag = "blocked4"
         _l4c = find_coordinate(l4c)
         self.blocked4.transform.position = Vector2(_l4c[0], _l4c[1])
 
         l5c = (1, 7)
         self.blocked5 = self.create_game_object(create_blocked_wall(l5c, (l5c[0]+1, l5c[1]+1)))
+        # self.blocked5 = self.create_game_object(tile)
         self.blocked5.tag = "blocked5"
         _l5c = find_coordinate(l5c)
         self.blocked5.transform.position = Vector2(_l5c[0], _l5c[1])
@@ -209,6 +214,7 @@ class Maze(World):
 
     def construct_wall(self, c):
         self.new_wall = self.create_game_object(create_wall(c, (c[0]+1, c[1]+1)))
+        # self.new_wall = self.create_game_object(tile)
         self.new_wall.tag = "wall"
         c1 = find_coordinate(c)
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
@@ -486,7 +492,6 @@ class Maze(World):
         coordinates.append((28, 8))
         coordinates.append((28, 9))
         coordinates.append((28, 10))
-
         coordinates.append((26, 10))
         coordinates.append((26, 11))
         coordinates.append((26, 12))
@@ -498,7 +503,6 @@ class Maze(World):
         coordinates.append((18, 13))
         coordinates.append((17, 13))
         coordinates.append((17, 14))
-
         coordinates.append((27, 13))
         coordinates.append((28, 13))
         coordinates.append((29, 13))
@@ -528,17 +532,53 @@ class Maze(World):
         coordinates.append((35, 3))
         coordinates.append((34, 3))
         coordinates.append((34, 4))
-
+        coordinates.append((34, 5))
+        coordinates.append((34, 6))
+        coordinates.append((34, 7))
+        coordinates.append((35, 7))
+        coordinates.append((36, 7))
         coordinates.append((39, 0))
         coordinates.append((40, 0))
-
         coordinates.append((38, 1))
         coordinates.append((38, 2))
         coordinates.append((38, 3))
         coordinates.append((38, 4))
+        coordinates.append((39, 5))
         coordinates.append((38, 5))
         coordinates.append((37, 5))
         coordinates.append((36, 5))
+        coordinates.append((39, 6))
+        coordinates.append((39, 7))
+        coordinates.append((39, 8))
+        coordinates.append((39, 9))
+        coordinates.append((39, 10))
+        coordinates.append((39, 11))
+        coordinates.append((39, 12))
+        coordinates.append((39, 13))
+        coordinates.append((38, 13))
+        coordinates.append((37, 13))
+        coordinates.append((36, 13))
+        coordinates.append((35, 13))
+        coordinates.append((34, 13))
+        coordinates.append((33, 13))
+        coordinates.append((32, 13))
+        coordinates.append((31, 13))
+        coordinates.append((30, 13))
+        coordinates.append((39, 8))
+        coordinates.append((36, 8))
+        coordinates.append((36, 9))
+        coordinates.append((36, 10))
+        coordinates.append((36, 11))
+        coordinates.append((35, 11))
+        coordinates.append((34, 11))
+        coordinates.append((33, 11))
+        coordinates.append((32, 11))
+        coordinates.append((32, 9))
+        coordinates.append((33, 9))
+        coordinates.append((34, 9))
+        coordinates.append((35, 9))
+        # lever
+        coordinates.append((35, 10))
         # =========================================Perimeter=======================================
 
         # top perimeter
