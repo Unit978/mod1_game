@@ -3,6 +3,8 @@ import pygame
 from components import BehaviorScript
 from util_math import Vector2
 
+from systems import PhysicsSystem
+
 
 class CameraFollow(BehaviorScript):
 
@@ -118,9 +120,6 @@ class PlayerPlatformMovement(BehaviorScript):
         self.v_speed = 400
 
         self.grounded = True
-
-        self.changed_direction = False
-
         self.holding_crate = False
 
     def update(self):
@@ -142,81 +141,90 @@ class PlayerPlatformMovement(BehaviorScript):
             self.holding_crate = False
 
     def take_input(self, event):
-
         if event.type == pygame.KEYDOWN:
-
             x_scale = self.entity.transform.scale.x
             y_scale = self.entity.transform.scale.y
 
             # change orientation of the transform based on where the player is facing.
+            # turned left
             if event.key == pygame.K_a:
                 # was facing right
                 if x_scale > 0:
-                    self.changed_direction = True
-                else:
-                    self.changed_direction = False
+                    self.entity.transform.scale_by(-x_scale, y_scale)
 
-                # if the player changed direction then flip the transform on the x-axis
-                if self.changed_direction:
-                    self.entity.transform.scale_by(-abs(x_scale), y_scale)
-                    self.changed_direction = False
+                    # get the animation dictionary from the world
+                    animations = self.entity.world.player_anims
 
+                    # set the walking animation
+                    #self.entity.animator.set_animation(animations["Walking"])
+
+            # turned right
             elif event.key == pygame.K_d:
                 # was facing left
                 if x_scale < 0:
-                    self.changed_direction = True
-                else:
-                    self.changed_direction = False
+                    self.entity.transform.scale_by(-x_scale, y_scale)
 
-                # flip the transform if the player changed direction
-                if self.changed_direction:
-                    self.entity.transform.scale_by(abs(x_scale), y_scale)
+                    # get the animation dictionary from the world
+                    animations = self.entity.world.player_anims
 
-            # check that we are grounded
-            # if event.key == pygame.K_SPACE and self.grounded :
-            #     self.entity.rigid_body.velocity.y = -self.v_speed
-            #
-            #     # we are no longer grounded
-            #     self.grounded = False
+                    # set the running animation
+                    #self.entity.animator.set_animation(animations["Walking"])
 
             # check that we are grounded
-            if event.key == pygame.K_SPACE:
+            elif event.key == pygame.K_SPACE and self.grounded:
                 self.entity.rigid_body.velocity.y = -self.v_speed
+
+                animations = self.entity.world.player_anims
+
+                # set the idle animation
+                self.entity.animator.set_animation(animations["Jumping"])
+
+                # shrink the collision box
+                #self.entity.collider.box.h = 40
+
+                # we are no longer grounded
+                self.grounded = False
+
+        elif event.type == pygame.KEYUP:
+            # player decides to stop moving
+            if event.key == pygame.K_a or event.key == pygame.K_d:
+                if self.entity.get_script("player plat move").grounded:
+                    animations = self.entity.world.player_anims
+                    # set the idle animation
+                    self.entity.animator.set_animation(animations["Idle"])
 
     def collision_event(self, other_collider):
 
         tag = other_collider.entity.tag
 
         # collided with a wall, floor, platform
-        if tag == "wall" or tag == "floor" or tag == "platform":
+        if tag == "wall" or tag == "floor" or tag == "platform" or "box":
 
-            y_player = self.entity.transform.position.y
-            h_player = self.entity.collider.box.height
-            player_lower_bound = y_player + h_player/2
+            # hit from the top which means that this collider bottom side was hit by the other collider
+            if PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider) == PhysicsSystem.bottom:
 
-            y_other = other_collider.entity.transform.position.y
-            h_other = other_collider.entity.collider.box.height
-            other_upper_bound = y_other - h_other/2
+                # came back from falling down
+                if not self.grounded:
 
-            # check if we collided from the top
-            # subtract 1 - this is like a tolerance to handle when the colliders overlap
-            if player_lower_bound - 1 < other_upper_bound:
+                    animations = self.entity.world.player_anims
+                    # set the running animation
+                    self.entity.animator.set_animation(animations["Idle"])
+
                 self.grounded = True
 
         if other_collider.entity.tag == "box":
 
             # check if the player hits the box from the sides
-            # add a small tolerance to the right/left values due to collider overlaps
-            on_left = self.entity.collider.box.right-5 < other_collider.box.left
-            on_right = self.entity.collider.box.left+5 > other_collider.box.right
+            side = PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider)
 
             direction = 1
-
-            if on_right:
+            # hit the other object from the left
+            if side == PhysicsSystem.left:
                 direction = -1
 
-            if self.grounded and self.holding_crate and (on_left or on_right):
-                other_collider.entity.rigid_body.velocity.x = 2*self.h_speed/3.0 * direction
+            if side == PhysicsSystem.left or side == PhysicsSystem.right:
+                if self.grounded and self.holding_crate:
+                    other_collider.entity.rigid_body.velocity.x = 2*self.h_speed/3.0 * direction
 
 
 class PlayerClimbing(BehaviorScript):
@@ -243,21 +251,32 @@ class PlayerClimbing(BehaviorScript):
         else:
             self.move_down = False
 
+    def take_input(self, event):
+        if self.move_down or self.move_up:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_w or event.key == pygame.K_s:
+
+                    animations = self.entity.world.player_anims
+                    # set the running animation
+                    self.entity.animator.set_animation(animations["Climbing"])
+
     def collision_event(self, other_collider):
 
         if other_collider.entity.tag == "ladder":
 
             grounded = self.entity.get_script("player plat move").grounded
 
-            if not grounded:
-                self.entity.rigid_body.velocity.y = 0
-                self.entity.rigid_body.velocity.x *= 0.1
-
             if self.move_up:
+                if not grounded:
+                    self.entity.rigid_body.velocity.y = 0
+                    self.entity.rigid_body.velocity.x *= 0.1
                 self.entity.rigid_body.velocity.y = -self.climb_speed
                 self.entity.get_script("player plat move").grounded = False
 
             elif self.move_down:
+                if not grounded:
+                    self.entity.rigid_body.velocity.y = 0
+                    self.entity.rigid_body.velocity.x *= 0.1
                 self.entity.rigid_body.velocity.y = self.climb_speed
 
 

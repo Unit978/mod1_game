@@ -3,7 +3,8 @@ from world import *
 from engine import *
 
 from scripts import *
-
+import os
+import re
 
 engine = Engine(1200, 700)
 
@@ -14,12 +15,11 @@ class PlatformWorld(World):
         super(PlatformWorld, self).__init__()
 
         self.player = None
+        self.player_anims = dict()
 
     def load_scene(self):
-
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
-
         self.origin = Vector2(0, -450)
 
         # world bounds
@@ -29,8 +29,6 @@ class PlatformWorld(World):
         background_image = pygame.Surface((w, h))
         background_image.convert()
         background_image.fill((12, 0, 40))
-        #background_image.fill( (0, 0, 0) )
-        #background_image.set_alpha(100)
 
         # add necessary components to be able to position and render the background
         background = self.create_entity()
@@ -40,26 +38,13 @@ class PlatformWorld(World):
         background.renderer.is_static = True
 
         self.load_player()
-
         self.load_ladders()
         self.load_floors()
         self.load_ceilings()
         self.load_walls()
         self.load_platforms()
         self.load_elevators()
-
-        box_img = pygame.image.load("assets/Assets/Block_v1_100x100-01.png").convert_alpha()
-
-        box = self.create_game_object(box_img)
-        box.transform.position = Vector2(900, 300)
-        box.renderer.depth = -5
-        box.collider.restitution = 0
-        box.collider.surface_friction = 0.8
-
-        box.add_component(RigidBody())
-        box.rigid_body.velocity = Vector2(0.0, 0.0)
-        box.rigid_body.gravity_scale = 2
-        box.tag = "box"
+        self.load_boxes()
 
         # set up camera
         render = self.get_system(RenderSystem.tag)
@@ -162,30 +147,12 @@ class PlatformWorld(World):
 
     def load_floors(self):
 
-        for i in range(0, 10):
-
-            plat_img = pygame.image.load("assets/Assets/Platform_Tile-01.png").convert_alpha()
-
-            plat_sample = self.create_entity()
-            plat_sample.add_component(Transform(Vector2(50*i, 300)))
-            plat_sample.add_component(Renderer(plat_img))
-            plat_sample.renderer.depth = -10
-
         floor_color = (50, 50, 50)
 
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
 
         img = RenderSystem.create_solid_image(w*2, 200, floor_color)
-
-        floor_img = pygame.image.load("assets/Assets/Tileable_Floor-01.png").convert_alpha()
-
-        floor_over = self.create_entity()
-        floor_over.add_component(Transform(Vector2(0, 600)))
-        floor_over.add_component(Renderer(floor_img))
-
-        floor_over.renderer.depth = -100
-
         floor_a = self.create_game_object(img)
         floor_a.transform.position = Vector2(w, h)
         set_floor_attributes(floor_a)
@@ -225,48 +192,30 @@ class PlatformWorld(World):
 
     def load_player(self):
 
-        # frames to demonstrate animation
-        frame_list = list()
+        # load animation frames
+        self.load_anims()
 
-        for i in range(0, 10):
-            path = "assets/GustavAnimations_Final/Idle/"
-            frame_file = "Idle_"
-            number = i + 1
-            frame_file += str(number) + ".png"
-            path += frame_file
-
-            frame = pygame.image.load(path).convert_alpha()
-            frame_list.append(frame)
-
-        self.player = self.create_game_object(frame_list[0])
+        self.player = self.create_game_object(self.player_anims["Idle"].frames[0])
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(230, 480)
+        self.player.transform.scale = Vector2(1, 1)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 2
         self.player.collider.restitution = 0
         self.player.name = "player"
 
-        self.player.collider.box.width = 50
-        self.player.collider.offset.x = -10
+        self.player.collider.set_box(50, 80)
+        self.player.collider.offset = Vector2(-12, 5)
 
         self.player.add_script(PlayerClimbing("player climb"))
         self.player.add_script(PlayerPlatformMovement("player plat move"))
 
-        # set up animation
-        animation = Animator.Animation()
-
-        for frame in frame_list:
-            animation.add_frame(frame)
-
-        # set time between frames in seconds
-        animation.frame_latency = 0.105
+        # add animator to player
+        animator = Animator()
+        self.player.add_component(animator)
 
         # set the first animation
-        animator = Animator()
-        animator.current_animation = animation
-
-        # add animator to player
-        self.player.add_component(animator)
+        animator.set_animation(self.player_anims["Idle"])
 
     def load_elevators(self):
 
@@ -300,6 +249,51 @@ class PlatformWorld(World):
             platform.add_script(ElevatorPlatMovement(spawn_point, "elev move"))
             platform.collider.treat_as_dynamic = True
 
+    def load_boxes(self):
+        box_img = pygame.image.load("assets/images/green_block.png").convert_alpha()
+
+        box = self.create_game_object(box_img)
+        box.transform.position = Vector2(900, 300)
+        box.renderer.depth = -5
+        box.collider.restitution = 0
+        box.collider.surface_friction = 0.8
+        box.collider.box.w -= 10
+        box.collider.box.h -= 10
+
+        box.add_component(RigidBody())
+        box.rigid_body.velocity = Vector2(0.0, 0.0)
+        box.rigid_body.gravity_scale = 1
+        box.tag = "box"
+
+    def load_anims(self):
+
+        path_to_anims = "assets/animations/"
+
+        # setup the idle animation
+        animation = load_anim_from_directory(path_to_anims + "Idle/")
+
+        # set time between frames in seconds
+        animation.frame_latency = 0.18
+
+        # add the animation to the dictionary
+        self.player_anims["Idle"] = animation
+
+        # setup the walk animation
+        animation = load_anim_from_directory(path_to_anims + "Walking/")
+        animation.frame_latency = 0.1
+        self.player_anims["Walking"] = animation
+
+        # add jump animation
+        animation = load_anim_from_directory(path_to_anims + "Jumping/")
+        animation.frame_latency = 0.12
+        animation.cycle = False
+        self.player_anims["Jumping"] = animation
+
+        # climb animation
+        animation = load_anim_from_directory(path_to_anims + "Climbing/")
+        animation.frame_latency = 0.1
+        self.player_anims["Climbing"] = animation
+
 
 def set_floor_attributes(floor):
     floor.collider.restitution = 0
@@ -323,7 +317,48 @@ def set_ceiling_attributes(ceiling):
 def set_platform_attributes(platform):
     platform.renderer.depth = 1
     platform.collider.restitution = 0
-    platform.collider.surface_friction = 0.8
+    platform.collider.surface_friction = 0.75
+    platform.tag = "platform"
+
+
+def get_files_in_dir(dir_path):
+
+    directory = os.listdir(dir_path)
+
+    # a list to store the paths to the individual files
+    file_paths = list()
+    for file_ in directory:
+
+        # add the whole relative path
+        file_paths.append(dir_path + file_)
+
+    # do a natural sort on the file names, meaning that string numbers are sorted
+    # by numeric values.
+    file_paths = natural_sort(file_paths)
+    return file_paths
+
+
+# This goes to a directory where each file represents an individual
+# animation frame. This returns an animation object with the loaded frames.
+def load_anim_from_directory(dir_path):
+
+    file_list = get_files_in_dir(dir_path)
+
+    # set up animation
+    animation = Animator.Animation()
+    for file_ in file_list:
+        frame = pygame.image.load(file_).convert_alpha()
+        animation.add_frame(frame)
+
+    return animation
+
+
+# Excerpt from stack overflow, Mark Byers
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)
 
 engine.set_world(PlatformWorld())
 engine.run()
+
