@@ -224,7 +224,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
             if side == PhysicsSystem.left or side == PhysicsSystem.right:
                 if self.grounded and self.holding_crate:
-                    other_collider.entity.rigid_body.velocity.x = 2*self.h_speed/3.0 * direction
+                    other_collider.entity.rigid_body.velocity.x = 4*self.h_speed/5.0 * direction
 
 
 class PlayerClimbing(BehaviorScript):
