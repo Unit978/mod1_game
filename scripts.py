@@ -146,52 +146,25 @@ class PlayerPlatformMovement(BehaviorScript):
             y_scale = self.entity.transform.scale.y
 
             # change orientation of the transform based on where the player is facing.
-            # turned left
+
+            # turn left
             if event.key == pygame.K_a:
                 # was facing right
                 if x_scale > 0:
                     self.entity.transform.scale_by(-x_scale, y_scale)
 
-                    # get the animation dictionary from the world
-                    animations = self.entity.world.player_anims
-
-                    # set the walking animation
-                    #self.entity.animator.set_animation(animations["Walking"])
-
-            # turned right
+            # turn right
             elif event.key == pygame.K_d:
                 # was facing left
                 if x_scale < 0:
                     self.entity.transform.scale_by(-x_scale, y_scale)
 
-                    # get the animation dictionary from the world
-                    animations = self.entity.world.player_anims
-
-                    # set the running animation
-                    #self.entity.animator.set_animation(animations["Walking"])
-
-            # check that we are grounded
+            # check that we are grounded- if so then jump
             elif event.key == pygame.K_SPACE and self.grounded:
                 self.entity.rigid_body.velocity.y = -self.v_speed
 
-                animations = self.entity.world.player_anims
-
-                # set the idle animation
-                self.entity.animator.set_animation(animations["Jumping"])
-
-                # shrink the collision box
-                #self.entity.collider.box.h = 40
-
                 # we are no longer grounded
                 self.grounded = False
-
-        elif event.type == pygame.KEYUP:
-            # player decides to stop moving
-            if event.key == pygame.K_a or event.key == pygame.K_d:
-                if self.entity.get_script("player plat move").grounded:
-                    animations = self.entity.world.player_anims
-                    # set the idle animation
-                    self.entity.animator.set_animation(animations["Idle"])
 
     def collision_event(self, other_collider):
 
@@ -202,14 +175,6 @@ class PlayerPlatformMovement(BehaviorScript):
 
             # hit from the top which means that this collider bottom side was hit by the other collider
             if PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider) == PhysicsSystem.bottom:
-
-                # came back from falling down
-                if not self.grounded:
-
-                    animations = self.entity.world.player_anims
-                    # set the running animation
-                    self.entity.animator.set_animation(animations["Idle"])
-
                 self.grounded = True
 
         if other_collider.entity.tag == "box":
@@ -255,10 +220,7 @@ class PlayerClimbing(BehaviorScript):
         if self.move_down or self.move_up:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_w or event.key == pygame.K_s:
-
-                    animations = self.entity.world.player_anims
-                    # set the running animation
-                    self.entity.animator.set_animation(animations["Climbing"])
+                    pass
 
     def collision_event(self, other_collider):
 
