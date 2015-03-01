@@ -6,11 +6,11 @@ from components import BehaviorScript
 engine = Engine(1200, 700)
 scale_x = 56  # original 56
 scale_y = 100  # original 100
-tile = pygame.image.load("assets/images/56x100 tile.png").convert()
-off_switch_state_on = pygame.image.load("assets/images/56x100_switchOFF.png").convert()
-off_switch_state_off = pygame.image.load("assets/images/56x100_switchNORM.png").convert()
+tile = pygame.image.load("assets/images/tiles/56x100 tile.png").convert()
+off_switch_state_on = pygame.image.load("assets/images/tiles/56x100_switchOFF.png").convert()
+off_switch_state_off = pygame.image.load("assets/images/tiles/56x100_switchNORM.png").convert()
+on_switch = pygame.image.load("assets/images/tiles/56x100_switchON.png").convert()
 
-on_switch = pygame.image.load("assets/images/56x100_switchON.png").convert()
 player_image_north = pygame.image.load("assets/images/character/character_north.png").convert_alpha()
 player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
 player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
@@ -297,7 +297,7 @@ class Maze(World):
         background.renderer.is_static = True
 
         # add necessary components to be able to position and render the background
-        floor_image = pygame.image.load("assets/images/WoodenFloor.png").convert()
+        floor_image = pygame.image.load("assets/images/floors/WoodenFloor.png").convert()
 
         # add necessary components to be able to position and render
         # the background
@@ -305,8 +305,6 @@ class Maze(World):
         floor.add_component(Transform(Vector2(0, 0)))
         floor.add_component(Renderer(floor_image))
         floor.renderer.depth = 100
-
-
 
         # frames to demonstrate animation
         frame1 = pygame.Surface((20, 20)).convert()
@@ -331,8 +329,9 @@ class Maze(World):
         self.player.add_script(PlayerMovement("player_move"))
         self.player.collider.restitution = 1
 
-        # set up animation
+        self.player.collider.set_box(30, 30)
 
+        # set up animation
 
 
         # animation = Animator.Animation()
