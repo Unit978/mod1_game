@@ -327,15 +327,19 @@ class PlatformWorld(World):
 
         # add conditions to the transitions
         # test to see if the player is moving on the x-axis
-        walk_transition.add_condition(lambda: abs(self.player.rigid_body.velocity.x) > 50)
+        min_speed_to_walk = 60
+
+        walk_transition.add_condition(lambda: abs(self.player.rigid_body.velocity.x) > min_speed_to_walk)
+        walk_transition.add_condition(lambda: self.player.get_script("player plat move").moving)
         walk_transition.add_condition(lambda: self.player.get_script("player plat move").grounded)
         walk_transition.add_condition(lambda: not self.player.get_script("player climb").climbing)
 
-        idle_transition.add_condition(lambda: abs(self.player.rigid_body.velocity.x) < 50)
+        idle_transition.add_condition(lambda: abs(self.player.rigid_body.velocity.x) < min_speed_to_walk or not self.player.get_script("player plat move").moving)
         idle_transition.add_condition(lambda: self.player.get_script("player plat move").grounded)
         idle_transition.add_condition(lambda: not self.player.get_script("player climb").climbing)
 
-        jump_transition.add_condition(lambda: not self.player.get_script("player plat move").grounded and False)
+        jump_transition.add_condition(lambda: not self.player.get_script("player plat move").grounded)
+        jump_transition.add_condition(lambda: not self.player.get_script("player climb").climbing)
 
         climb_transition.add_condition(lambda: self.player.get_script("player climb").colliding_with_ladder())
         climb_transition.add_condition(lambda: self.player.get_script("player climb").climbing)
