@@ -117,21 +117,25 @@ class PlayerPlatformMovement(BehaviorScript):
     def __init__(self, script_name):
         super(PlayerPlatformMovement, self).__init__(script_name)
         self.h_speed = 250
-        self.v_speed = 400
+        self.v_speed = 300
+        self.moving = False
 
         self.grounded = True
         self.holding_crate = False
 
     def update(self):
+        print(self.moving)
 
         keys = pygame.key.get_pressed()
 
         velocity = self.entity.rigid_body.velocity
 
         if keys[pygame.K_a]:
+            self.moving = True
             velocity.x = -self.h_speed
 
         if keys[pygame.K_d]:
+            self.moving = True
             velocity.x = self.h_speed
 
         if keys[pygame.K_LCTRL]:
@@ -164,6 +168,9 @@ class PlayerPlatformMovement(BehaviorScript):
 
                 # we are no longer grounded
                 self.grounded = False
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a or event.key == pygame.K_d:
+                self.moving = False
 
     def collision_event(self, other_collider):
 
@@ -204,9 +211,11 @@ class PlayerClimbing(BehaviorScript):
     def update(self):
         keys = pygame.key.get_pressed()
 
+        # check if we exited from the ladder collider
         if not self.colliding_with_ladder():
             self.climbing = False
 
+        # detect if the player wants to climb the ladder
         if keys[pygame.K_w]:
             self.move_up = True
         else:
@@ -217,17 +226,26 @@ class PlayerClimbing(BehaviorScript):
         else:
             self.move_down = False
 
+        # if we are in a climbing state
         if self.climbing:
+
+            # disable gravity and un-pause climbing animation
             self.entity.rigid_body.gravity_scale = 0
             self.entity.animator.pause = False
 
+            # move up or down the ladder
             if self.move_up:
                 self.entity.rigid_body.velocity.y = -self.climb_speed
             elif self.move_down:
                 self.entity.rigid_body.velocity.y = self.climb_speed
+
+            # the player stays in place on the ladder
             else:
                 self.entity.rigid_body.velocity.y = 0
                 self.entity.animator.pause = True
+
+        # we exited from the ladder - set gravity back to normal for the player
+        # and un-pause the animator
         else:
             self.entity.rigid_body.gravity_scale = 1
             self.entity.animator.pause = False
@@ -239,12 +257,18 @@ class PlayerClimbing(BehaviorScript):
                     pass
 
     def collision_event(self, other_collider):
+
+        # if the player is colliding with the ladder
         if other_collider.entity.tag == "ladder":
             grounded = self.entity.get_script("player plat move").grounded
 
+            # if the player wants to move up or down then set climbing to true
+            # and un-ground the player
             if self.move_up:
+
+                # if the player climbs the ladder from mid air then slow him down
+                # to attach him to the ladder
                 if not grounded:
-                    self.entity.rigid_body.velocity.y = 0
                     self.entity.rigid_body.velocity.x *= 0.1
 
                 self.entity.get_script("player plat move").grounded = False
@@ -252,7 +276,6 @@ class PlayerClimbing(BehaviorScript):
 
             elif self.move_down:
                 if not grounded:
-                    self.entity.rigid_body.velocity.y = 0
                     self.entity.rigid_body.velocity.x *= 0.1
 
                 self.entity.get_script("player plat move").grounded = False
