@@ -15,7 +15,29 @@ player_image_north = pygame.image.load("assets/images/character/character_north.
 player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
 player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
 player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
-player = player_image_north
+
+
+def create_blocked_wall(c1, c2):
+        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
+        lever.fill((0, 255, 0))
+        return lever
+
+
+def create_lever(c1, c2):
+        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
+        lever.fill((255, 0, 0))
+        return lever
+
+
+def create_wall(c1, c2):
+        wall = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
+        wall.fill((255, 255, 255))
+        return wall
+
+
+def find_coordinate(c):
+        coordinate = c[0]*scale_x, c[1]*scale_y
+        return coordinate
 
 
 class CameraFollow(BehaviorScript):
@@ -98,29 +120,6 @@ class PlayerMovement(BehaviorScript):
         #         self.entity.rigid_body.velocity.y = -self.v_speed
 
 
-def create_blocked_wall(c1, c2):
-        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
-        lever.fill((0, 255, 0))
-        return lever
-
-
-def create_lever(c1, c2):
-        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
-        lever.fill((255, 0, 0))
-        return lever
-
-
-def create_wall(c1, c2):
-        wall = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
-        wall.fill((255, 255, 255))
-        return wall
-
-
-def find_coordinate(c):
-        coordinate = c[0]*scale_x, c[1]*scale_y
-        return coordinate
-
-
 class Maze(World):
     def __init__(self):
         super(Maze, self).__init__()
@@ -155,58 +154,72 @@ class Maze(World):
         # static maze walls
         self.new_wall = None
 
-    def update(self):
-        pass
-
     def construct_blocked_walls(self):
         l1c = (12, 4)
-        # self.blocked1 = self.create_game_object(create_blocked_wall(l1c, (l1c[0]+1, l1c[1]+1)))
         self.blocked1 = self.create_game_object(tile)
         self.blocked1.tag = "blocked1"
         _l1c = find_coordinate(l1c)
         self.blocked1.transform.position = Vector2(_l1c[0], _l1c[1])
 
         l2c = (24, 6)
-        # self.blocked2 = self.create_game_object(create_blocked_wall(l2c, (l2c[0]+1, l2c[1]+1)))
         self.blocked2 = self.create_game_object(tile)
         self.blocked2.tag = "blocked2"
         _l2c = find_coordinate(l2c)
         self.blocked2.transform.position = Vector2(_l2c[0], _l2c[1])
 
         l3c = (15, 11)
-        # self.blocked3 = self.create_game_object(create_blocked_wall(l3c, (l3c[0]+1, l3c[1]+1)))
         self.blocked3 = self.create_game_object(tile)
         self.blocked3.tag = "blocked3"
         _l3c = find_coordinate(l3c)
         self.blocked3.transform.position = Vector2(_l3c[0], _l3c[1])
 
         l4c = (4, 12)
-        # self.blocked4 = self.create_game_object(create_blocked_wall(l4c, (l4c[0]+1, l4c[1]+1)))
         self.blocked4 = self.create_game_object(tile)
         self.blocked4.tag = "blocked4"
         _l4c = find_coordinate(l4c)
         self.blocked4.transform.position = Vector2(_l4c[0], _l4c[1])
 
         l5c = (1, 7)
-        # self.blocked5 = self.create_game_object(create_blocked_wall(l5c, (l5c[0]+1, l5c[1]+1)))
         self.blocked5 = self.create_game_object(tile)
         self.blocked5.tag = "blocked5"
         _l5c = find_coordinate(l5c)
         self.blocked5.transform.position = Vector2(_l5c[0], _l5c[1])
+
+        l6c = (23, 7)
+        self.blocked6 = self.create_game_object(tile)
+        self.blocked6.tag = "blocked6"
+        _l6c = find_coordinate(l6c)
+        self.blocked6.transform.position = Vector2(_l6c[0], _l6c[1])
 
     def construct_off_levers(self):
 
         animation = Animator.Animation()
         animation.add_frame(off_switch_state_off)
         animation.add_frame(off_switch_state_on)
-        animation.frame_latency = 1.0
-        animator = Animator()
-        animator.current_animation = animation
+        animation.frame_latency = 0.75
+
+        animator_1 = Animator()
+        animator_1.current_animation = animation
+
+        animator_2 = Animator()
+        animator_2.current_animation = animation
+
+        animator_3 = Animator()
+        animator_3.current_animation = animation
+
+        animator_4 = Animator()
+        animator_4.current_animation = animation
+
+        animator_5 = Animator()
+        animator_5.current_animation = animation
+
+        animator_6 = Animator()
+        animator_6.current_animation = animation
 
         l1c = (14, 7)
         # self.lever1 = self.create_game_object(create_lever(l1c, (l1c[0]+1, l1c[1]+1)))
         self.lever1 = self.create_game_object(off_switch_state_off)
-        # self.lever1.add_component(animator)
+        self.lever1.add_component(animator_1)
         self.lever1.tag = "lever1_off"
         _l1c = find_coordinate(l1c)
         self.lever1.transform.position = Vector2(_l1c[0], _l1c[1])
@@ -214,7 +227,7 @@ class Maze(World):
         l2c = (23, 0)
         # self.lever2 = self.create_game_object(create_lever(l2c, (l2c[0]+1, l2c[1]+1)))
         self.lever2 = self.create_game_object(off_switch_state_off)
-        # self.lever2.add_component(animator)
+        self.lever2.add_component(animator_2)
         self.lever2.tag = "lever2_off"
         _l2c = find_coordinate(l2c)
         self.lever2.transform.position = Vector2(_l2c[0], _l2c[1])
@@ -222,7 +235,7 @@ class Maze(World):
         l3c = (16, 13)
         # self.lever3 = self.create_game_object(create_lever(l3c, (l3c[0]+1, l3c[1]+1)))
         self.lever3 = self.create_game_object(off_switch_state_off)
-        # self.lever3.add_component(animator)
+        self.lever3.add_component(animator_3)
         self.lever3.tag = "lever3_off"
         _l3c = find_coordinate(l3c)
         self.lever3.transform.position = Vector2(_l3c[0], _l3c[1])
@@ -230,7 +243,7 @@ class Maze(World):
         l4c = (5, 13)
         # self.lever4 = self.create_game_object(create_lever(l4c, (l4c[0]+1, l4c[1]+1)))
         self.lever4 = self.create_game_object(off_switch_state_off)
-        # self.lever4.add_component(animator)
+        self.lever4.add_component(animator_4)
         self.lever4.tag = "lever4_off"
         _l4c = find_coordinate(l4c)
         self.lever4.transform.position = Vector2(_l4c[0], _l4c[1])
@@ -238,10 +251,17 @@ class Maze(World):
         l5c = (0, 6)
         # self.lever5 = self.create_game_object(create_lever(l5c, (l5c[0]+1, l5c[1]+1)))
         self.lever5 = self.create_game_object(off_switch_state_off)
-        # self.lever5.add_component(animator)
+        self.lever5.add_component(animator_5)
         self.lever5.tag = "lever5_off"
         _l5c = find_coordinate(l5c)
         self.lever5.transform.position = Vector2(_l5c[0], _l5c[1])
+
+        l6c = (35, 10)
+        self.lever6 = self.create_game_object(off_switch_state_off)
+        self.lever6.add_component(animator_6)
+        self.lever6.tag = "lever6_off"
+        _l6c = find_coordinate(l6c)
+        self.lever6.transform.position = Vector2(_l6c[0], _l6c[1])
 
     def construct_on_lever(self):
         l1c = (14, 7)
@@ -274,6 +294,12 @@ class Maze(World):
         _l5c = find_coordinate(l5c)
         self.lever5.transform.position = Vector2(_l5c[0], _l5c[1])
 
+        l6c = (35, 10)
+        self.lever6 = self.create_game_object(on_switch)
+        self.lever6.tag = "lever6_on"
+        _l6c = find_coordinate(l6c)
+        self.lever6.transform.position = Vector2(_l6c[0], _l6c[1])
+
     def construct_wall(self, c):
         # self.new_wall = self.create_game_object(create_wall(c, (c[0]+1, c[1]+1)))
         self.new_wall = self.create_game_object(tile)
@@ -301,58 +327,75 @@ class Maze(World):
 
         # add necessary components to be able to position and render
         # the background
-        floor = self.create_entity()
-        floor.add_component(Transform(Vector2(0, 0)))
-        floor.add_component(Renderer(floor_image))
-        floor.renderer.depth = 100
 
-        # frames to demonstrate animation
-        frame1 = pygame.Surface((20, 20)).convert()
-        frame1.fill((255, 0, 0))
+        # ========================================Floor====================================================
 
-        frame2 = pygame.Surface((20, 20)).convert()
-        frame2.fill((0, 255, 0))
+        floor_1 = self.create_entity()
+        floor_coordinate = find_coordinate((-2, -2))
+        floor_1.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_1.add_component(Renderer(floor_image))
+        floor_1.renderer.depth = 100
 
-        frame3 = pygame.Surface((20, 20)).convert()
-        frame3.fill((0, 0, 255))
+        floor_2 = self.create_entity()
+        floor_coordinate = find_coordinate((21, -2))
+        floor_2.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_2.add_component(Renderer(floor_image))
+        floor_2.renderer.depth = 100
 
-        frame4 = pygame.Surface((20, 20)).convert()
-        frame4.fill((0, 0, 0))
+        floor_3 = self.create_entity()
+        floor_coordinate = find_coordinate((-2, 5))
+        floor_3.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_3.add_component(Renderer(floor_image))
+        floor_3.renderer.depth = 100
 
-        # self.player = self.create_game_object(frame1)
-        self.player = self.create_game_object(player)
+        floor_4 = self.create_entity()
+        floor_coordinate = find_coordinate((21, 5))
+        floor_4.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_4.add_component(Renderer(floor_image))
+        floor_4.renderer.depth = 100
+
+        floor_5 = self.create_entity()
+        floor_coordinate = find_coordinate((-2, 8))
+        floor_5.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_5.add_component(Renderer(floor_image))
+        floor_5.renderer.depth = 100
+
+        floor_6 = self.create_entity()
+        floor_coordinate = find_coordinate((21, 8))
+        floor_6.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_6.add_component(Renderer(floor_image))
+        floor_6.renderer.depth = 100
+
+        floor_7 = self.create_entity()
+        floor_coordinate = find_coordinate((17, -2))
+        floor_7.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_7.add_component(Renderer(floor_image))
+        floor_7.renderer.depth = 100
+
+        floor_8 = self.create_entity()
+        floor_coordinate = find_coordinate((17, 5))
+        floor_8.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_8.add_component(Renderer(floor_image))
+        floor_8.renderer.depth = 100
+
+        floor_9 = self.create_entity()
+        floor_coordinate = find_coordinate((17, 8))
+        floor_9.add_component(Transform(Vector2(floor_coordinate[0], floor_coordinate[1])))
+        floor_9.add_component(Renderer(floor_image))
+        floor_9.renderer.depth = 100
+
+        # =========================================Create Player====================================
+
+        self.player = self.create_game_object(player_image_north)
         self.player.add_component(RigidBody())
-        # self.player.transform.position = Vector2(0, 0)
-        self.player.transform.position = Vector2(800, 400)
+        self.player.transform.position = Vector2(0, 0)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
         self.player.add_script(PlayerMovement("player_move"))
         self.player.collider.restitution = 1
-
         self.player.collider.set_box(30, 30)
 
-        # set up animation
-
-
-        # animation = Animator.Animation()
-        #
-        # # add frames to animation
-        # animation.add_frame(frame1)
-        # animation.add_frame(frame2)
-        # animation.add_frame(frame3)
-        # animation.add_frame(frame4)
-        #
-        # # set time between frames in seconds
-        # animation.frame_latency = 0.1
-        #
-        # # set the first animation
-        # animator = Animator()
-        # animator.current_animation = animation
-
-        # add animator to player
-        # self.player.add_component(animator)
         # =============================================Static Maze Tiles==========================
-        # create maze walls
         coordinates = []
         coordinates.append((0, 1))  # 1
         coordinates.append((0, 2))  # 2
@@ -459,7 +502,6 @@ class Maze(World):
         coordinates.append((21, 7))  # 103
         coordinates.append((22, 7))  # 104
         coordinates.append((24, 7))  # 105
-        # coordinates.append((24, 6))  # 106
         coordinates.append((24, 5))  # 107
         coordinates.append((24, 4))  # 108
         coordinates.append((24, 3))  # 109
@@ -493,7 +535,6 @@ class Maze(World):
         coordinates.append((19, 12))   # 137
         coordinates.append((18, 12))   # 138
         coordinates.append((17, 12))   # 139
-        # coordinates.append((15, 11))   # 140
         coordinates.append((15, 12))   # 141
         coordinates.append((14, 12))   # 142
         coordinates.append((13, 12))   # 143
@@ -509,7 +550,6 @@ class Maze(World):
         coordinates.append((6, 13))   # 153
         coordinates.append((6, 11))   # 154
         coordinates.append((5, 11))   # 155
-        # coordinates.append((4, 12))   # 156
         coordinates.append((4, 13))   # 157
         coordinates.append((3, 13))   # 158
         coordinates.append((2, 13))   # 159
@@ -521,7 +561,6 @@ class Maze(World):
         coordinates.append((1, 10))   # 165
         coordinates.append((1, 9))   # 166
         coordinates.append((1, 8))   # 167
-        # coordinates.append((1, 7))   # 168
         coordinates.append((1, 6))   # 169
         coordinates.append((1, 5))   # 170
         coordinates.append((0, 5))   # 171
@@ -553,11 +592,6 @@ class Maze(World):
         coordinates.append((26, 1))
         coordinates.append((25, -1))
         coordinates.append((27, 0))
-        # lever 6
-        coordinates.append((27, -1))
-        # blocked wall 6
-        coordinates.append((23, 7))
-
         coordinates.append((26, 6))
         coordinates.append((26, 7))
         coordinates.append((26, 8))
@@ -650,8 +684,8 @@ class Maze(World):
         coordinates.append((33, 9))
         coordinates.append((34, 9))
         coordinates.append((35, 9))
-        # lever
-        coordinates.append((35, 10))
+        coordinates.append((-1, 1))
+
         # =========================================Perimeter=======================================
 
         # top perimeter
@@ -668,10 +702,6 @@ class Maze(World):
         for i in range(-2, 16):
             coordinates.append((42, i))
 
-        # static walls for maze
-        for i in coordinates:
-            self.construct_wall(i)
-
         self.player.add_script(PlayerBehavior("player behavior"))
 
         # add camera
@@ -679,14 +709,19 @@ class Maze(World):
         render.camera = self.create_entity()
         render.camera.add_component(Transform(Vector2(0, 0)))
         render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
-
+        # ====================================Construct Maze======================================
         # create levers to be triggered by player
+
+        # static walls for maze
+        for i in coordinates:
+            self.construct_wall(i)
+        # construct on levers first after off lever is destroyed
         self.construct_on_lever()
+
         self.construct_off_levers()
 
-
         # create blocked path walls
-        # self.construct_blocked_walls()
+        self.construct_blocked_walls()
 
 
 class PlayerBehavior (BehaviorScript):
@@ -703,29 +738,29 @@ class PlayerBehavior (BehaviorScript):
         other_entity = other_collider.entity
         # hits lever 1-6
         if other_entity.tag == "lever1_off":
-            print "You hit lever 1!"
+            # print "You hit lever 1!"
             self.touched_lever1 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever2_off":
-            print "You hit lever 2!"
+            # print "You hit lever 2!"
             self.touched_lever2 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever3_off":
-            print "You hit lever 3!"
+            # print "You hit lever 3!"
             self.touched_lever3 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever4_off":
-            print "You hit lever 4!"
+            # print "You hit lever 4!"
             self.touched_lever4 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever5_off":
-            print "You hit lever 5!"
+            # print "You hit lever 5!"
             self.touched_lever5 = True
             self.entity.world.destroy_entity(other_entity)
-        # elif other_entity.tag == "lever6":
-        #     print "You hit lever 6!"
-        #     self.touched_lever6 = True
-        #     self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "lever6_off":
+            # print "You hit lever 6!"
+            self.touched_lever6 = True
+            self.entity.world.destroy_entity(other_entity)
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
             self.entity.world.destroy_entity(other_entity)
