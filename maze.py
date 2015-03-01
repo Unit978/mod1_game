@@ -15,7 +15,29 @@ player_image_north = pygame.image.load("assets/images/character/character_north.
 player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
 player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
 player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
-player = player_image_north
+
+
+def create_blocked_wall(c1, c2):
+        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
+        lever.fill((0, 255, 0))
+        return lever
+
+
+def create_lever(c1, c2):
+        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
+        lever.fill((255, 0, 0))
+        return lever
+
+
+def create_wall(c1, c2):
+        wall = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
+        wall.fill((255, 255, 255))
+        return wall
+
+
+def find_coordinate(c):
+        coordinate = c[0]*scale_x, c[1]*scale_y
+        return coordinate
 
 
 class CameraFollow(BehaviorScript):
@@ -96,29 +118,6 @@ class PlayerMovement(BehaviorScript):
         # if event.type == pygame.KEYDOWN:
         #     if event.key == pygame.K_SPACE:
         #         self.entity.rigid_body.velocity.y = -self.v_speed
-
-
-def create_blocked_wall(c1, c2):
-        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
-        lever.fill((0, 255, 0))
-        return lever
-
-
-def create_lever(c1, c2):
-        lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
-        lever.fill((255, 0, 0))
-        return lever
-
-
-def create_wall(c1, c2):
-        wall = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
-        wall.fill((255, 255, 255))
-        return wall
-
-
-def find_coordinate(c):
-        coordinate = c[0]*scale_x, c[1]*scale_y
-        return coordinate
 
 
 class Maze(World):
@@ -387,7 +386,7 @@ class Maze(World):
 
         # =========================================Create Player====================================
 
-        self.player = self.create_game_object(player)
+        self.player = self.create_game_object(player_image_north)
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(0, 0)
         self.player.renderer.depth = -10
