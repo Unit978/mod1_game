@@ -136,7 +136,6 @@ class PlayerPlatformMovement(BehaviorScript):
 
         if keys[pygame.K_LCTRL]:
             self.holding_crate = True
-
         else:
             self.holding_crate = False
 
@@ -200,21 +199,38 @@ class PlayerClimbing(BehaviorScript):
         self.climb_speed = 200.0
         self.move_up = False
         self.move_down = False
+        self.climbing = False
 
     def update(self):
         keys = pygame.key.get_pressed()
 
+        if not self.colliding_with_ladder():
+            self.climbing = False
+
         if keys[pygame.K_w]:
             self.move_up = True
-
         else:
             self.move_up = False
 
         if keys[pygame.K_s]:
             self.move_down = True
-
         else:
             self.move_down = False
+
+        if self.climbing:
+            self.entity.rigid_body.gravity_scale = 0
+            self.entity.animator.pause = False
+
+            if self.move_up:
+                self.entity.rigid_body.velocity.y = -self.climb_speed
+            elif self.move_down:
+                self.entity.rigid_body.velocity.y = self.climb_speed
+            else:
+                self.entity.rigid_body.velocity.y = 0
+                self.entity.animator.pause = True
+        else:
+            self.entity.rigid_body.gravity_scale = 1
+            self.entity.animator.pause = False
 
     def take_input(self, event):
         if self.move_down or self.move_up:
@@ -223,23 +239,32 @@ class PlayerClimbing(BehaviorScript):
                     pass
 
     def collision_event(self, other_collider):
-
         if other_collider.entity.tag == "ladder":
-
             grounded = self.entity.get_script("player plat move").grounded
 
             if self.move_up:
                 if not grounded:
                     self.entity.rigid_body.velocity.y = 0
                     self.entity.rigid_body.velocity.x *= 0.1
-                self.entity.rigid_body.velocity.y = -self.climb_speed
+
                 self.entity.get_script("player plat move").grounded = False
+                self.climbing = True
 
             elif self.move_down:
                 if not grounded:
                     self.entity.rigid_body.velocity.y = 0
                     self.entity.rigid_body.velocity.x *= 0.1
-                self.entity.rigid_body.velocity.y = self.climb_speed
+
+                self.entity.get_script("player plat move").grounded = False
+                self.climbing = True
+
+    def colliding_with_ladder(self):
+        for ladder in self.entity.world.ladders:
+
+            # check if the player is colliding with a ladder
+            if self.entity.collider.box.colliderect(ladder.collider.box):
+                return True
+        return False
 
 
 # This script defines the behavior of how the player moves from a top down
