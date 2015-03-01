@@ -4,9 +4,18 @@ from engine import *
 from components import BehaviorScript
 
 engine = Engine(1200, 700)
-scale_x = 28  # original 56
-scale_y = 50  # original 100
+scale_x = 56  # original 56
+scale_y = 100  # original 100
 tile = pygame.image.load("assets/images/56x100 tile.png").convert()
+off_switch_state_on = pygame.image.load("assets/images/56x100_switchOFF.png").convert()
+off_switch_state_off = pygame.image.load("assets/images/56x100_switchNORM.png").convert()
+
+on_switch = pygame.image.load("assets/images/56x100_switchON.png").convert()
+player_image_north = pygame.image.load("assets/images/character/character_north.png").convert_alpha()
+player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
+player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
+player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
+player = player_image_north
 
 
 class CameraFollow(BehaviorScript):
@@ -57,26 +66,28 @@ class PlayerMovement(BehaviorScript):
         self.speed = 200.0
 
     def update(self):
-
         keys = pygame.key.get_pressed()
 
         velocity = self.entity.rigid_body.velocity
 
         if keys[pygame.K_a]:
             velocity.x = -self.speed
-
+            self.entity.renderer.sprite = player_image_west
         elif keys[pygame.K_d]:
             velocity.x = self.speed
+            self.entity.renderer.sprite = player_image_east
 
         else:
             velocity.x = 0
 
         if keys[pygame.K_w]:
             velocity.y = -self.speed
-
+            self.entity.renderer.sprite = player_image_north
+            # print "North"
         elif keys[pygame.K_s]:
             velocity.y = self.speed
-
+            self.entity.renderer.sprite = player_image_south
+            # print "South"
         else:
             velocity.y = 0
 
@@ -145,76 +156,128 @@ class Maze(World):
         # static maze walls
         self.new_wall = None
 
+    def update(self):
+        pass
+
     def construct_blocked_walls(self):
         l1c = (12, 4)
-        self.blocked1 = self.create_game_object(create_blocked_wall(l1c, (l1c[0]+1, l1c[1]+1)))
-        # self.blocked1 = self.create_game_object(tile)
+        # self.blocked1 = self.create_game_object(create_blocked_wall(l1c, (l1c[0]+1, l1c[1]+1)))
+        self.blocked1 = self.create_game_object(tile)
         self.blocked1.tag = "blocked1"
         _l1c = find_coordinate(l1c)
         self.blocked1.transform.position = Vector2(_l1c[0], _l1c[1])
 
         l2c = (24, 6)
-        self.blocked2 = self.create_game_object(create_blocked_wall(l2c, (l2c[0]+1, l2c[1]+1)))
-        # self.blocked2 = self.create_game_object(tile)
+        # self.blocked2 = self.create_game_object(create_blocked_wall(l2c, (l2c[0]+1, l2c[1]+1)))
+        self.blocked2 = self.create_game_object(tile)
         self.blocked2.tag = "blocked2"
         _l2c = find_coordinate(l2c)
         self.blocked2.transform.position = Vector2(_l2c[0], _l2c[1])
 
         l3c = (15, 11)
-        self.blocked3 = self.create_game_object(create_blocked_wall(l3c, (l3c[0]+1, l3c[1]+1)))
-        # self.blocked3 = self.create_game_object(tile)
+        # self.blocked3 = self.create_game_object(create_blocked_wall(l3c, (l3c[0]+1, l3c[1]+1)))
+        self.blocked3 = self.create_game_object(tile)
         self.blocked3.tag = "blocked3"
         _l3c = find_coordinate(l3c)
         self.blocked3.transform.position = Vector2(_l3c[0], _l3c[1])
 
         l4c = (4, 12)
-        self.blocked4 = self.create_game_object(create_blocked_wall(l4c, (l4c[0]+1, l4c[1]+1)))
-        # self.blocked4 = self.create_game_object(tile)
+        # self.blocked4 = self.create_game_object(create_blocked_wall(l4c, (l4c[0]+1, l4c[1]+1)))
+        self.blocked4 = self.create_game_object(tile)
         self.blocked4.tag = "blocked4"
         _l4c = find_coordinate(l4c)
         self.blocked4.transform.position = Vector2(_l4c[0], _l4c[1])
 
         l5c = (1, 7)
-        self.blocked5 = self.create_game_object(create_blocked_wall(l5c, (l5c[0]+1, l5c[1]+1)))
-        # self.blocked5 = self.create_game_object(tile)
+        # self.blocked5 = self.create_game_object(create_blocked_wall(l5c, (l5c[0]+1, l5c[1]+1)))
+        self.blocked5 = self.create_game_object(tile)
         self.blocked5.tag = "blocked5"
         _l5c = find_coordinate(l5c)
         self.blocked5.transform.position = Vector2(_l5c[0], _l5c[1])
 
-    def construct_levers(self):
+    def construct_off_levers(self):
+
+        animation = Animator.Animation()
+        animation.add_frame(off_switch_state_off)
+        animation.add_frame(off_switch_state_on)
+        animation.frame_latency = 1.0
+        animator = Animator()
+        animator.current_animation = animation
+
         l1c = (14, 7)
-        self.lever1 = self.create_game_object(create_lever(l1c, (l1c[0]+1, l1c[1]+1)))
-        self.lever1.tag = "lever1"
+        # self.lever1 = self.create_game_object(create_lever(l1c, (l1c[0]+1, l1c[1]+1)))
+        self.lever1 = self.create_game_object(off_switch_state_off)
+        # self.lever1.add_component(animator)
+        self.lever1.tag = "lever1_off"
         _l1c = find_coordinate(l1c)
         self.lever1.transform.position = Vector2(_l1c[0], _l1c[1])
 
         l2c = (23, 0)
-        self.lever2 = self.create_game_object(create_lever(l2c, (l2c[0]+1, l2c[1]+1)))
-        self.lever2.tag = "lever2"
+        # self.lever2 = self.create_game_object(create_lever(l2c, (l2c[0]+1, l2c[1]+1)))
+        self.lever2 = self.create_game_object(off_switch_state_off)
+        # self.lever2.add_component(animator)
+        self.lever2.tag = "lever2_off"
         _l2c = find_coordinate(l2c)
         self.lever2.transform.position = Vector2(_l2c[0], _l2c[1])
 
         l3c = (16, 13)
-        self.lever3 = self.create_game_object(create_lever(l3c, (l3c[0]+1, l3c[1]+1)))
-        self.lever3.tag = "lever3"
+        # self.lever3 = self.create_game_object(create_lever(l3c, (l3c[0]+1, l3c[1]+1)))
+        self.lever3 = self.create_game_object(off_switch_state_off)
+        # self.lever3.add_component(animator)
+        self.lever3.tag = "lever3_off"
         _l3c = find_coordinate(l3c)
         self.lever3.transform.position = Vector2(_l3c[0], _l3c[1])
 
         l4c = (5, 13)
-        self.lever4 = self.create_game_object(create_lever(l4c, (l4c[0]+1, l4c[1]+1)))
-        self.lever4.tag = "lever4"
+        # self.lever4 = self.create_game_object(create_lever(l4c, (l4c[0]+1, l4c[1]+1)))
+        self.lever4 = self.create_game_object(off_switch_state_off)
+        # self.lever4.add_component(animator)
+        self.lever4.tag = "lever4_off"
         _l4c = find_coordinate(l4c)
         self.lever4.transform.position = Vector2(_l4c[0], _l4c[1])
 
         l5c = (0, 6)
-        self.lever5 = self.create_game_object(create_lever(l5c, (l5c[0]+1, l5c[1]+1)))
-        self.lever5.tag = "lever5"
+        # self.lever5 = self.create_game_object(create_lever(l5c, (l5c[0]+1, l5c[1]+1)))
+        self.lever5 = self.create_game_object(off_switch_state_off)
+        # self.lever5.add_component(animator)
+        self.lever5.tag = "lever5_off"
+        _l5c = find_coordinate(l5c)
+        self.lever5.transform.position = Vector2(_l5c[0], _l5c[1])
+
+    def construct_on_lever(self):
+        l1c = (14, 7)
+        self.lever1 = self.create_game_object(on_switch)
+        self.lever1.tag = "lever1_on"
+        _l1c = find_coordinate(l1c)
+        self.lever1.transform.position = Vector2(_l1c[0], _l1c[1])
+
+        l2c = (23, 0)
+        self.lever2 = self.create_game_object(on_switch)
+        self.lever2.tag = "lever2_on"
+        _l2c = find_coordinate(l2c)
+        self.lever2.transform.position = Vector2(_l2c[0], _l2c[1])
+
+        l3c = (16, 13)
+        self.lever3 = self.create_game_object(on_switch)
+        self.lever3.tag = "lever3_on"
+        _l3c = find_coordinate(l3c)
+        self.lever3.transform.position = Vector2(_l3c[0], _l3c[1])
+
+        l4c = (5, 13)
+        self.lever4 = self.create_game_object(on_switch)
+        self.lever4.tag = "lever4_on"
+        _l4c = find_coordinate(l4c)
+        self.lever4.transform.position = Vector2(_l4c[0], _l4c[1])
+
+        l5c = (0, 6)
+        self.lever5 = self.create_game_object(on_switch)
+        self.lever5.tag = "lever5_on"
         _l5c = find_coordinate(l5c)
         self.lever5.transform.position = Vector2(_l5c[0], _l5c[1])
 
     def construct_wall(self, c):
-        self.new_wall = self.create_game_object(create_wall(c, (c[0]+1, c[1]+1)))
-        # self.new_wall = self.create_game_object(tile)
+        # self.new_wall = self.create_game_object(create_wall(c, (c[0]+1, c[1]+1)))
+        self.new_wall = self.create_game_object(tile)
         self.new_wall.tag = "wall"
         c1 = find_coordinate(c)
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
@@ -251,7 +314,8 @@ class Maze(World):
         frame4 = pygame.Surface((20, 20)).convert()
         frame4.fill((0, 0, 0))
 
-        self.player = self.create_game_object(frame1)
+        # self.player = self.create_game_object(frame1)
+        self.player = self.create_game_object(player)
         self.player.add_component(RigidBody())
         # self.player.transform.position = Vector2(0, 0)
         self.player.transform.position = Vector2(800, 400)
@@ -261,23 +325,26 @@ class Maze(World):
         self.player.collider.restitution = 1
 
         # set up animation
-        animation = Animator.Animation()
 
-        # add frames to animation
-        animation.add_frame(frame1)
-        animation.add_frame(frame2)
-        animation.add_frame(frame3)
-        animation.add_frame(frame4)
 
-        # set time between frames in seconds
-        animation.frame_latency = 0.1
 
-        # set the first animation
-        animator = Animator()
-        animator.current_animation = animation
+        # animation = Animator.Animation()
+        #
+        # # add frames to animation
+        # animation.add_frame(frame1)
+        # animation.add_frame(frame2)
+        # animation.add_frame(frame3)
+        # animation.add_frame(frame4)
+        #
+        # # set time between frames in seconds
+        # animation.frame_latency = 0.1
+        #
+        # # set the first animation
+        # animator = Animator()
+        # animator.current_animation = animation
 
         # add animator to player
-        self.player.add_component(animator)
+        # self.player.add_component(animator)
         # =============================================Static Maze Tiles==========================
         # create maze walls
         coordinates = []
@@ -480,9 +547,9 @@ class Maze(World):
         coordinates.append((26, 1))
         coordinates.append((25, -1))
         coordinates.append((27, 0))
-        # lever 7
+        # lever 6
         coordinates.append((27, -1))
-        # blocked wall 7
+        # blocked wall 6
         coordinates.append((23, 7))
 
         coordinates.append((26, 6))
@@ -608,9 +675,12 @@ class Maze(World):
         render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
 
         # create levers to be triggered by player
-        self.construct_levers()
+        self.construct_on_lever()
+        self.construct_off_levers()
+
+
         # create blocked path walls
-        self.construct_blocked_walls()
+        # self.construct_blocked_walls()
 
 
 class PlayerBehavior (BehaviorScript):
@@ -626,24 +696,30 @@ class PlayerBehavior (BehaviorScript):
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
         # hits lever 1-6
-        if other_entity.tag == "lever1":
+        if other_entity.tag == "lever1_off":
             print "You hit lever 1!"
             self.touched_lever1 = True
-        elif other_entity.tag == "lever2":
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "lever2_off":
             print "You hit lever 2!"
             self.touched_lever2 = True
-        elif other_entity.tag == "lever3":
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "lever3_off":
             print "You hit lever 3!"
             self.touched_lever3 = True
-        elif other_entity.tag == "lever4":
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "lever4_off":
             print "You hit lever 4!"
             self.touched_lever4 = True
-        elif other_entity.tag == "lever5":
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "lever5_off":
             print "You hit lever 5!"
             self.touched_lever5 = True
-        elif other_entity.tag == "lever6":
-            print "You hit lever 6!"
-            self.touched_lever6 = True
+            self.entity.world.destroy_entity(other_entity)
+        # elif other_entity.tag == "lever6":
+        #     print "You hit lever 6!"
+        #     self.touched_lever6 = True
+        #     self.entity.world.destroy_entity(other_entity)
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
             self.entity.world.destroy_entity(other_entity)
