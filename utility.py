@@ -9,6 +9,7 @@ from util_math import Vector2
 from os import listdir
 from re import split
 from pygame import Surface
+from pygame import image
 
 
 def set_floor_attributes(floor):
@@ -79,7 +80,7 @@ def load_anim_from_directory(dir_path):
     # set up animation
     animation = Animator.Animation()
     for file_ in file_list:
-        frame = pygame.image.load(file_).convert_alpha()
+        frame = image.load(file_).convert_alpha()
         animation.add_frame(frame)
 
     return animation
