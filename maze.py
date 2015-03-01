@@ -115,7 +115,6 @@ class Maze(World):
         super(Maze, self).__init__()
 
         self.player = None
-        self.background = None
 
         # border walls
         self.topWall = None
@@ -226,18 +225,26 @@ class Maze(World):
         h = self.engine.display.get_height()
         background_image = pygame.Surface((w, h))
         background_image.convert()
-        background_image.fill((12, 0, 40))
+        background_image.fill((0, 0, 0))
+
+        background = self.create_entity()
+        background.add_component(Transform(Vector2(0, 0)))
+        background.add_component(Renderer(background_image))
+        background.renderer.depth = 110
+        background.renderer.is_static = True
 
         # add necessary components to be able to position and render the background
-        background_image = pygame.image.load("assets/images/WoodenFloor.png").convert()
+        floor_image = pygame.image.load("assets/images/WoodenFloor.png").convert()
 
         # add necessary components to be able to position and render
         # the background
-        self.background = self.create_entity()
-        self.background.add_component(Transform(Vector2(0, 0)))
-        self.background.add_component(Renderer(background_image))
-        self.background.renderer.depth = 100
-        self.background.renderer.is_static = True
+        floor = self.create_entity()
+        floor.add_component(Transform(Vector2(0, 0)))
+        floor.add_component(Renderer(floor_image))
+        floor.renderer.depth = 100
+
+
+
         # frames to demonstrate animation
         frame1 = pygame.Surface((20, 20)).convert()
         frame1.fill((255, 0, 0))
