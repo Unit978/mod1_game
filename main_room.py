@@ -69,9 +69,11 @@ class PlatformWorld(World):
 
         # start the background music and set it to loop forever
         mixer.music.play(-1)
-        mixer.music.set_volume(0.5)
+        mixer.music.set_volume(0.3)
 
         self.add_script(UpdateAnimationHandler(self.player_anim_handler))
+
+        PhysicsSystem.gravity.y += 200
 
     def load_ladders(self):
         path = "assets/images/ladders/"
@@ -229,8 +231,8 @@ class PlatformWorld(World):
         self.player.collider.restitution = 0
         self.player.name = "player"
 
-        self.player.collider.set_box(50, 80)
-        self.player.collider.set_offset(-12, 5)
+        self.player.collider.set_box(40, 70)
+        self.player.collider.set_offset(-12, 10)
 
         self.player.add_script(PlayerClimbing("player climb"))
         self.player.add_script(PlayerPlatformMovement("player plat move"))
@@ -346,6 +348,7 @@ class PlatformWorld(World):
 
         # set up transitions between states
         self.player_anim_handler.add_bi_transition("idle", "walking", walk_transition, idle_transition)
+
         self.player_anim_handler.add_bi_transition("idle", "jumping", jump_transition, idle_transition)
         self.player_anim_handler.add_bi_transition("walking", "jumping", jump_transition, walk_transition)
 
@@ -363,6 +366,7 @@ class PlatformWorld(World):
         ladder.collider.is_trigger = True
         ladder.transform.position = Vector2(x, y)
 
+        #ladder.collider.box.w -= 80
         ladder.collider.box.w -= 80
         ladder.collider.box.h -= 50
 
