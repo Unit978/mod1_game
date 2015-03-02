@@ -21,6 +21,9 @@ class UpdateAnimationHandler(WorldScript):
     def update(self):
         self.anim_state_machine.update()
 
+        # make the lamp mask follow the player
+        self.world.lamp_mask.transform.position = self.world.player.transform.position
+
 
 class PlatformWorld(World):
 
@@ -31,6 +34,8 @@ class PlatformWorld(World):
         self.player_anim_handler = None
 
         self.ladders = list()
+
+        self.lamp_mask = None
 
     def load_scene(self):
         w = self.engine.display.get_width()
@@ -51,6 +56,19 @@ class PlatformWorld(World):
         background.add_component(Renderer(background_image))
         background.renderer.depth = 100
         background.renderer.is_static = True
+
+        lamp_light_img = pygame.image.load("assets/images/lamp_light_masks/lamp_light.png").convert_alpha()
+
+        img_width = lamp_light_img.get_width()
+        img_height = lamp_light_img.get_height()
+
+        pivot = Vector2(img_width/2, img_height/2)
+
+        # add necessary components to be able to position and render the background
+        self.lamp_mask = self.create_entity()
+        self.lamp_mask.add_component(Transform(Vector2(0, 0)))
+        self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
+        self.lamp_mask.renderer.depth = -100
 
         self.load_player()
         self.load_ladders()
@@ -83,7 +101,7 @@ class PlatformWorld(World):
 
         shift = 200
 
-        self.create_ladder(ladder_body, ladder_top, 440, 950-shift, 395)
+        self.create_ladder(ladder_body, ladder_top, 470, 950-shift, 385)
         self.create_ladder(ladder_body, ladder_top, 300, 1650-shift, 10)
         self.create_ladder(ladder_body, ladder_top, 460, 1920-shift-50, 375)
 
