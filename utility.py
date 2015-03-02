@@ -99,6 +99,11 @@ def create_img_from_tile(tile_surface, width, height):
     size = (width, height)
     dst_surface = Surface(size).convert()
 
+    # make the dst_surface transparent
+    color_mask = (7, 13, 17)
+    dst_surface.fill(color_mask)
+    dst_surface.set_colorkey(color_mask)
+
     # fill the dst_surface horizontally first with the tile, once we get to the edge
     # go down a column and repeat.
     for y in range(0, height, tile_h):
