@@ -12,13 +12,27 @@ off_switch_state_on = pygame.image.load("assets/images/tiles/56x100_switchOFF.pn
 off_switch_state_off = pygame.image.load("assets/images/tiles/56x100_switchNORM.png").convert()
 on_switch = pygame.image.load("assets/images/tiles/56x100_switchON.png").convert()
 
-player_image_north = pygame.image.load("assets/images/character/character_north.png").convert_alpha()
-player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
-player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
-player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
+player_image_north = pygame.image.load("assets/images/character_new/character_north.png").convert_alpha()
+player_image_south = pygame.image.load("assets/images/character_new/character_south.png").convert_alpha()
+player_image_east = pygame.image.load("assets/images/character_new/character_east.png").convert_alpha()
+player_image_west = pygame.image.load("assets/images/character_new/character_west.png").convert_alpha()
+
+
+player_image_northeast = pygame.image.load("assets/images/character_new/character_northeast.png").convert_alpha()
+player_image_northwest = pygame.image.load("assets/images/character_new/character_northwest.png").convert_alpha()
+player_image_southeast = pygame.image.load("assets/images/character_new/character_southeast.png").convert_alpha()
+player_image_southwest = pygame.image.load("assets/images/character_new/character_southwest.png").convert_alpha()
+
 
 lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
+
 background_music = mixer.music.load("assets/music/Voice In My Head.mp3")
+bump_sound = mixer.Sound("assets/music/bump.WAV")
+block_removed = mixer.Sound("assets/music/dooropen.WAV")
+blocked_wall = mixer.Sound("assets/music/effect_ice1WAV")
+bump_sound.set_volume(0.2)
+block_removed.set_volume(0.3)
+blocked_wall.set_volume(0.3)
 
 
 def create_blocked_wall(c1, c2):
@@ -72,20 +86,29 @@ class PlayerMovement(BehaviorScript):
         elif keys[pygame.K_d]:
             velocity.x = self.speed
             self.entity.renderer.sprite = player_image_east
-
         else:
             velocity.x = 0
 
         if keys[pygame.K_w]:
             velocity.y = -self.speed
             self.entity.renderer.sprite = player_image_north
-            # print "North"
         elif keys[pygame.K_s]:
             velocity.y = self.speed
             self.entity.renderer.sprite = player_image_south
-            # print "South"
         else:
             velocity.y = 0
+
+        if keys[pygame.K_w] and keys[pygame.K_d]:
+            self.entity.renderer.sprite = player_image_northeast
+
+        elif keys[pygame.K_w] and keys[pygame.K_a]:
+            self.entity.renderer.sprite = player_image_northwest
+
+        elif keys[pygame.K_s] and keys[pygame.K_d]:
+            self.entity.renderer.sprite = player_image_southeast
+
+        elif keys[pygame.K_s] and keys[pygame.K_a]:
+            self.entity.renderer.sprite = player_image_southwest
 
     def take_input(self, event):
         pass
@@ -128,7 +151,7 @@ class Maze(World):
 
         # static maze walls
         self.new_wall = None
-
+        # lamp for sprite
         self.lamp_mask = None
 
     def construct_blocked_walls(self):
@@ -693,7 +716,7 @@ class Maze(World):
         coordinates.append((33, 9))
         coordinates.append((34, 9))
         coordinates.append((35, 9))
-        # coordinates.append((-1, 1))
+        coordinates.append((-1, 1))
 
         # =========================================Perimeter=======================================
 
@@ -782,16 +805,39 @@ class PlayerBehavior (BehaviorScript):
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked2" and self.touched_lever2 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked3" and self.touched_lever3 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked4" and self.touched_lever4 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked5" and self.touched_lever5 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked6" and self.touched_lever6 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
+
+        if other_entity.tag == "wall":
+            # bump_sound.play()
+            pass
+
+        if other_entity.tag == "blocked1" and self.touched_lever1 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked2" and self.touched_lever2 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked3" and self.touched_lever3 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked4" and self.touched_lever4 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked5" and self.touched_lever5 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked6" and self.touched_lever6 is False:
+            blocked_wall.play()
 
 engine.set_world(Maze())
 engine.run()
