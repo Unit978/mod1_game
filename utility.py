@@ -100,7 +100,7 @@ def create_img_from_tile(tile_surface, width, height):
     dst_surface = Surface(size).convert()
 
     # make the dst_surface transparent
-    color_mask = (123, 54, 33)
+    color_mask = (7, 13, 17)
     dst_surface.fill(color_mask)
     dst_surface.set_colorkey(color_mask)
 
