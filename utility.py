@@ -10,6 +10,7 @@ from pygame import Surface
 from pygame import image
 from components import RigidBody
 
+
 def set_floor_attributes(floor):
     floor.collider.restitution = 0
     floor.collider.surface_friction = 0.75
@@ -45,7 +46,7 @@ def set_box_attributes(box):
 
     box.add_component(RigidBody())
     box.rigid_body.velocity = Vector2(0.0, 0.0)
-    box.rigid_body.gravity_scale = 2
+    box.rigid_body.gravity_scale = 3.2
     box.tag = "box"
 
 
