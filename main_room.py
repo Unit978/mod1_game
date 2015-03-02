@@ -49,8 +49,6 @@ class PlatformWorld(World):
 
         background_image = pygame.Surface((w, h))
         background_image.convert()
-        #background_image.fill((12, 0, 40))
-        #background_image.fill((6, 0, 20))
         background_image.fill((0, 0, 0))
 
         # add necessary components to be able to position and render the background
