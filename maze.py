@@ -17,7 +17,7 @@ player_image_south = pygame.image.load("assets/images/character/character_south.
 player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
 player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
 
-lamp_light_img = pygame.image.load("assets/images/lamp_light_masks/lamp_light.png").convert_alpha()
+lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
 
 
 def create_blocked_wall(c1, c2):
