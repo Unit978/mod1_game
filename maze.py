@@ -27,7 +27,8 @@ player_image_southwest = pygame.image.load("assets/images/character_new/characte
 
 lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
 
-background_music = mixer.music.load("assets/music/VoiceInMyHead.mp3")
+mixer.music.load("assets/music/VoiceInMyHead.ogg")
+
 bump_sound = mixer.Sound("assets/sound/bump.WAV")
 block_removed = mixer.Sound("assets/sound/dooropen.WAV")
 blocked_wall = mixer.Sound("assets/sound/effect_ice1.WAV")
