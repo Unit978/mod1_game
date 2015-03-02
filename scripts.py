@@ -116,32 +116,56 @@ class PlayerPlatformMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerPlatformMovement, self).__init__(script_name)
-        self.h_speed = 250
-        self.v_speed = 300
+        self.h_speed = 200
+        self.v_speed = 350
         self.moving = False
 
         self.grounded = True
         self.holding_crate = False
 
     def update(self):
-        print(self.moving)
-
         keys = pygame.key.get_pressed()
 
         velocity = self.entity.rigid_body.velocity
 
-        if keys[pygame.K_a]:
-            self.moving = True
-            velocity.x = -self.h_speed
+        if self.grounded:
 
-        if keys[pygame.K_d]:
-            self.moving = True
-            velocity.x = self.h_speed
+            x_scale = self.entity.transform.scale.x
+            y_scale = self.entity.transform.scale.y
 
-        if keys[pygame.K_LCTRL]:
-            self.holding_crate = True
-        else:
-            self.holding_crate = False
+            # move left
+            if keys[pygame.K_a]:
+                self.moving = True
+                velocity.x = -self.h_speed
+
+                # fix the orientation of the transform based on the key press
+                if x_scale > 0:
+                    self.entity.transform.scale_by(-x_scale, y_scale)
+
+            # move right
+            elif keys[pygame.K_d]:
+                self.moving = True
+                velocity.x = self.h_speed
+
+                if x_scale < 0:
+                    self.entity.transform.scale_by(-x_scale, y_scale)
+
+            if keys[pygame.K_LCTRL]:
+                self.holding_crate = True
+            else:
+                self.holding_crate = False
+
+        if self.entity.get_script("player climb").climbing:
+
+            if keys[pygame.K_a]:
+                self.moving = True
+                velocity.x = -self.h_speed/2
+
+            elif keys[pygame.K_d]:
+                self.moving = True
+                velocity.x = self.h_speed/2
+            else:
+                velocity.x = 0
 
     def take_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -149,22 +173,36 @@ class PlayerPlatformMovement(BehaviorScript):
             y_scale = self.entity.transform.scale.y
 
             # change orientation of the transform based on where the player is facing.
+            if self.grounded:
+                # turn left
+                if event.key == pygame.K_a:
+                    # was facing right - then make the transform turn left
+                    if x_scale > 0:
+                        self.entity.transform.scale_by(-x_scale, y_scale)
 
-            # turn left
-            if event.key == pygame.K_a:
-                # was facing right
-                if x_scale > 0:
-                    self.entity.transform.scale_by(-x_scale, y_scale)
+                # turn right
+                elif event.key == pygame.K_d:
+                    # was facing left
+                    if x_scale < 0:
+                        self.entity.transform.scale_by(-x_scale, y_scale)
 
-            # turn right
-            elif event.key == pygame.K_d:
-                # was facing left
-                if x_scale < 0:
-                    self.entity.transform.scale_by(-x_scale, y_scale)
+            if self.entity.get_script("player climb").climbing:
+                # turn left
+                if event.key == pygame.K_a:
+                    # was facing right then make the transform turn right
+                    if x_scale > 0:
+                        self.entity.transform.scale_by(-x_scale, y_scale)
 
-            # check that we are grounded- if so then jump
-            elif event.key == pygame.K_SPACE and self.grounded:
+                # turn right
+                elif event.key == pygame.K_d:
+                    # was facing left
+                    if x_scale < 0:
+                        self.entity.transform.scale_by(-x_scale, y_scale)
+
+            # check that we are grounded- if so then JUMP
+            if event.key == pygame.K_SPACE and self.grounded:
                 self.entity.rigid_body.velocity.y = -self.v_speed
+                self.entity.rigid_body.velocity.x *= 4/5.0
 
                 # we are no longer grounded
                 self.grounded = False
@@ -215,6 +253,10 @@ class PlayerClimbing(BehaviorScript):
         if not self.colliding_with_ladder():
             self.climbing = False
 
+            # reset the collider for side scrolling
+            xs = self.entity.transform.scale.x
+            self.entity.collider.set_offset(-12*xs, 10)
+
         # detect if the player wants to climb the ladder
         if keys[pygame.K_w]:
             self.move_up = True
@@ -228,6 +270,9 @@ class PlayerClimbing(BehaviorScript):
 
         # if we are in a climbing state
         if self.climbing:
+
+            # center the collider when climbing
+            self.entity.collider.set_offset(0, 0)
 
             # disable gravity and un-pause climbing animation
             self.entity.rigid_body.gravity_scale = 0
@@ -249,12 +294,6 @@ class PlayerClimbing(BehaviorScript):
         else:
             self.entity.rigid_body.gravity_scale = 1
             self.entity.animator.pause = False
-
-    def take_input(self, event):
-        if self.move_down or self.move_up:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w or event.key == pygame.K_s:
-                    pass
 
     def collision_event(self, other_collider):
 
@@ -282,10 +321,9 @@ class PlayerClimbing(BehaviorScript):
                 self.climbing = True
 
     def colliding_with_ladder(self):
+        # check if the player is colliding with a ladder
         for ladder in self.entity.world.ladders:
-
-            # check if the player is colliding with a ladder
-            if self.entity.collider.box.colliderect(ladder.collider.box):
+            if PhysicsSystem.box2box_collision(self.entity.collider, ladder.collider):
                 return True
         return False
 
