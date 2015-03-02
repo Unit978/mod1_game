@@ -9,7 +9,7 @@ from state_machine import *
 engine = Engine(1200, 700)
 
 # load music to play in the background
-background_music = mixer.music.load("assets/music/MarysCreepyCarnivalTheme.mp3")
+mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
 
 
 class UpdateAnimationHandler(WorldScript):
