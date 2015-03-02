@@ -1,8 +1,6 @@
 __author__ = 'luisl_000'
 
-
 # This class contains helper functions to create objects or animations
-
 
 from components import Animator
 from util_math import Vector2
@@ -10,6 +8,7 @@ from os import listdir
 from re import split
 from pygame import Surface
 from pygame import image
+from components import RigidBody
 
 
 def set_floor_attributes(floor):
@@ -38,20 +37,17 @@ def set_platform_attributes(platform):
     platform.tag = "platform"
 
 
-def create_ladder(world, ladder_body, ladder_top, height, x, y):
-    img = create_img_from_tile(ladder_body, ladder_body.get_width(), height)
+def set_box_attributes(box):
+    box.renderer.depth = 2
+    box.collider.restitution = 0
+    box.collider.surface_friction = 0.8
+    box.collider.box.w -= 10
+    box.collider.box.h -= 10
 
-    # pad image on top of the ladder
-    img = conjoin_surfaces_vertically(ladder_top, img)
-
-    ladder1 = world.create_game_object(img)
-    ladder1.collider.is_trigger = True
-    ladder1.transform.position = Vector2(x, y)
-
-    ladder1.collider.box.w -= 80
-    ladder1.collider.box.h -= 50
-
-    ladder1.tag = "ladder"
+    box.add_component(RigidBody())
+    box.rigid_body.velocity = Vector2(0.0, 0.0)
+    box.rigid_body.gravity_scale = 3.2
+    box.tag = "box"
 
 
 def get_files_in_dir(dir_path):
