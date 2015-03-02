@@ -81,9 +81,11 @@ class PlatformWorld(World):
         ladder_body = load(path + "ladder_body.png").convert_alpha()
         ladder_top = load(path + "ladder_top.png").convert_alpha()
 
-        self.create_ladder(ladder_body, ladder_top, 440, 950, 395)
-        self.create_ladder(ladder_body, ladder_top, 270, 1650, 25)
-        self.create_ladder(ladder_body, ladder_top, 410, 1920, 395)
+        shift = 200
+
+        self.create_ladder(ladder_body, ladder_top, 440, 950-shift, 395)
+        self.create_ladder(ladder_body, ladder_top, 300, 1650-shift, 10)
+        self.create_ladder(ladder_body, ladder_top, 460, 1920-shift-50, 375)
 
     def load_platforms(self):
 
@@ -107,24 +109,25 @@ class PlatformWorld(World):
         plat_b.transform.position = Vector2(400, 400)
         set_platform_attributes(plat_b)
 
+        shift = 200
         plat_c = self.create_game_object(img_250x50)
-        plat_c.transform.position = Vector2(1100, 200)
+        plat_c.transform.position = Vector2(1100-shift, 200)
         set_platform_attributes(plat_c)
 
         plat_d = self.create_game_object(img_250x50)
-        plat_d.transform.position = Vector2(1700, 200)
+        plat_d.transform.position = Vector2(1700-shift, 200)
         set_platform_attributes(plat_d)
 
         plat_e = self.create_game_object(img_250x50)
-        plat_e.transform.position = Vector2(1500, -100)
+        plat_e.transform.position = Vector2(1500-shift, -100)
         set_platform_attributes(plat_e)
 
         plat_f = self.create_game_object(img_400x120)
-        plat_f.transform.position = Vector2(2150, 250)
+        plat_f.transform.position = Vector2(2150-shift-50, 250)
         set_platform_attributes(plat_f)
 
         plat_g = self.create_game_object(img_200x30)
-        plat_g.transform.position = Vector2(2250, 0)
+        plat_g.transform.position = Vector2(2250-shift-100, 0)
         set_platform_attributes(plat_g)
 
         plat_h = self.create_game_object(img_300x30)
@@ -268,21 +271,32 @@ class PlatformWorld(World):
             platform.add_script(ElevatorPlatMovement(spawn_point, "elev move"))
             platform.collider.treat_as_dynamic = True
 
+        # the elevator shaft
+        path = "assets/images/environment/elevator/"
+
+        elev_shaft_img = pygame.image.load(path + "elevator_shaft.png").convert_alpha()
+        elevator_shaft = self.create_entity()
+        elevator_shaft.add_component(Transform(Vector2(1100, -375)))
+        elevator_shaft.add_component(Renderer(elev_shaft_img))
+        elevator_shaft.renderer.depth = 50
+
+        elevator_cabin_img = pygame.image.load(path + "elevator.png").convert_alpha()
+        elevator_cabin = self.create_entity()
+        elevator_cabin.add_component(Transform(Vector2(1150, 600 - elevator_cabin_img.get_height())))
+        elevator_cabin.add_component(Renderer(elevator_cabin_img))
+        elevator_cabin.renderer.depth = 40
+
     def load_boxes(self):
         box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
 
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(900, 300)
-        box.renderer.depth = -5
-        box.collider.restitution = 0
-        box.collider.surface_friction = 0.8
-        box.collider.box.w -= 10
-        box.collider.box.h -= 10
+        set_box_attributes(box)
 
-        box.add_component(RigidBody())
-        box.rigid_body.velocity = Vector2(0.0, 0.0)
-        box.rigid_body.gravity_scale = 2
-        box.tag = "box"
+        box_img = pygame.image.load("assets/images/crates/gold_blue.png").convert_alpha()
+        box = self.create_game_object(box_img)
+        box.transform.position = Vector2(500, 300)
+        set_box_attributes(box)
 
     def load_anims(self):
 
@@ -366,9 +380,11 @@ class PlatformWorld(World):
         ladder.collider.is_trigger = True
         ladder.transform.position = Vector2(x, y)
 
-        new_w = ladder.collider.box.w - 80
+        new_w = ladder.collider.box.w - 75
         new_h = ladder.collider.box.h - 50
         ladder.collider.set_box(new_w, new_h)
+
+        ladder.renderer.depth = 3
 
         ladder.tag = "ladder"
 
