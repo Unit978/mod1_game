@@ -87,7 +87,7 @@ class PlatformMovement(BehaviorScript):
         w = self.entity.collider.box.width
 
         right_limit = 2000
-        left_limit = 500
+        left_limit = 800
 
         right = transform.position.x + w/2
         left = transform.position.x - w/2
