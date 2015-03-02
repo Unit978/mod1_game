@@ -5,6 +5,7 @@ from components import BehaviorScript
 from scripts import CameraFollow
 
 engine = Engine(1200, 700)
+
 scale_x = 56  # original 56
 scale_y = 100  # original 100
 tile = pygame.image.load("assets/images/tiles/56x100 tile.png").convert()
@@ -26,10 +27,10 @@ player_image_southwest = pygame.image.load("assets/images/character_new/characte
 
 lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
 
-background_music = mixer.music.load("assets/music/Voice In My Head.mp3")
-bump_sound = mixer.Sound("assets/music/bump.WAV")
-block_removed = mixer.Sound("assets/music/dooropen.WAV")
-blocked_wall = mixer.Sound("assets/music/effect_ice1WAV")
+background_music = mixer.music.load("assets/music/VoiceInMyHead.mp3")
+bump_sound = mixer.Sound("assets/sound/bump.WAV")
+block_removed = mixer.Sound("assets/sound/dooropen.WAV")
+blocked_wall = mixer.Sound("assets/sound/effect_ice1.WAV")
 bump_sound.set_volume(0.2)
 block_removed.set_volume(0.3)
 blocked_wall.set_volume(0.3)
