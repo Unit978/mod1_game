@@ -5,6 +5,8 @@ from util_math import Vector2
 
 from systems import PhysicsSystem
 
+from copy import copy
+
 
 class CameraFollow(BehaviorScript):
 
@@ -120,13 +122,15 @@ class PlayerPlatformMovement(BehaviorScript):
         self.v_speed = 350
         self.moving = False
 
-        self.grounded = True
+        self.grounded = False
         self.holding_crate = False
 
     def update(self):
         keys = pygame.key.get_pressed()
 
         velocity = self.entity.rigid_body.velocity
+
+        self.test_if_grounded()
 
         if self.grounded:
 
@@ -206,6 +210,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
                 # we are no longer grounded
                 self.grounded = False
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d:
                 self.moving = False
@@ -234,6 +239,44 @@ class PlayerPlatformMovement(BehaviorScript):
             if side == PhysicsSystem.left or side == PhysicsSystem.right:
                 if self.grounded and self.holding_crate:
                     other_collider.entity.rigid_body.velocity.x = 4*self.h_speed/5.0 * direction
+
+    def test_if_grounded(self):
+
+        self.grounded = False
+
+        # iterate through all the entities of the world
+        for other in self.entity.world.entity_manager.entities:
+
+            # make sure it is not itself
+            if self.entity is not other:
+
+                # check if the player collided with a wall, box, or platform
+                tag = other.tag
+                if tag == "wall" or tag == "platform" or tag == "box" or tag == "floor":
+
+                    player = self.entity
+
+                    temp_player_box = copy(player.collider.box)
+                    temp_other_box = copy(other.collider.box)
+
+                    # use the tolerance hit boxes to detect collision
+                    player.collider.box = player.collider.tolerance_hitbox
+                    other.collider.box = other.collider.tolerance_hitbox
+
+                    player.collider.box.center = temp_player_box.center
+                    other.collider.box.center = temp_other_box.center
+
+                    # if the player collided with an element considered as ground, then ground the player
+                    if PhysicsSystem.box2box_collision(player.collider, other.collider):
+
+                        # check orientation of the collision
+                        orientation = PhysicsSystem.calc_box_hit_orientation
+                        if orientation(player.collider, other.collider) == PhysicsSystem.bottom:
+                            self.grounded = True
+
+                    # reset the collider boxes to the original ones
+                    player.collider.box = temp_player_box
+                    other.collider.box = temp_other_box
 
 
 class PlayerClimbing(BehaviorScript):
