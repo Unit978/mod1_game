@@ -16,6 +16,8 @@ player_image_south = pygame.image.load("assets/images/character/character_south.
 player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
 player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
 
+lamp_light_img = pygame.image.load("assets/images/lamp_light_masks/lamp_light.png").convert_alpha()
+
 
 def create_blocked_wall(c1, c2):
         lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
@@ -38,6 +40,17 @@ def create_wall(c1, c2):
 def find_coordinate(c):
         coordinate = c[0]*scale_x, c[1]*scale_y
         return coordinate
+
+
+class LightFollow(WorldScript):
+
+    def __init__(self):
+        super(LightFollow, self).__init__("light follow")
+
+    def update(self):
+
+        # make the lamp mask follow the player
+        self.world.lamp_mask.transform.position = self.world.player.transform.position
 
 
 class CameraFollow(BehaviorScript):
@@ -154,6 +167,8 @@ class Maze(World):
 
         # static maze walls
         self.new_wall = None
+
+        self.lamp_mask = None
 
     def construct_blocked_walls(self):
         l1c = (12, 4)
@@ -331,6 +346,17 @@ class Maze(World):
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
 
     def load_scene(self):
+
+        img_width = lamp_light_img.get_width()
+        img_height = lamp_light_img.get_height()
+
+        pivot = Vector2(img_width/2, img_height/2)
+
+        # add necessary components to be able to position and render the background
+        self.lamp_mask = self.create_entity()
+        self.lamp_mask.add_component(Transform(Vector2(0, 0)))
+        self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
+        self.lamp_mask.renderer.depth = -100
 
         PhysicsSystem.gravity.zero()
         w = self.engine.display.get_width()
@@ -744,6 +770,7 @@ class Maze(World):
 
         # create blocked path walls
         self.construct_blocked_walls()
+        self.add_script(LightFollow())
 
 
 class PlayerBehavior (BehaviorScript):
