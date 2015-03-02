@@ -1,8 +1,6 @@
 __author__ = 'luisl_000'
 
-
 # This class contains helper functions to create objects or animations
-
 
 from components import Animator
 from util_math import Vector2
@@ -10,7 +8,7 @@ from os import listdir
 from re import split
 from pygame import Surface
 from pygame import image
-
+from components import RigidBody
 
 def set_floor_attributes(floor):
     floor.collider.restitution = 0
@@ -36,6 +34,19 @@ def set_platform_attributes(platform):
     platform.collider.restitution = 0
     platform.collider.surface_friction = 0.75
     platform.tag = "platform"
+
+
+def set_box_attributes(box):
+    box.renderer.depth = 2
+    box.collider.restitution = 0
+    box.collider.surface_friction = 0.8
+    box.collider.box.w -= 10
+    box.collider.box.h -= 10
+
+    box.add_component(RigidBody())
+    box.rigid_body.velocity = Vector2(0.0, 0.0)
+    box.rigid_body.gravity_scale = 2
+    box.tag = "box"
 
 
 def get_files_in_dir(dir_path):
