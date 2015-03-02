@@ -18,6 +18,7 @@ player_image_east = pygame.image.load("assets/images/character/character_east.pn
 player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
 
 lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
+background_music = mixer.music.load("assets/music/Voice In My Head.mp3")
 
 
 def create_blocked_wall(c1, c2):
@@ -731,6 +732,10 @@ class Maze(World):
         # create blocked path walls
         self.construct_blocked_walls()
         self.add_script(LightFollow())
+
+        # start the background music and set it to loop forever
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
 
 class PlayerBehavior (BehaviorScript):
