@@ -36,6 +36,7 @@ class PlatformWorld(World):
         self.ladders = list()
 
         self.lamp_mask = None
+        self.light_source = None
 
     def load_scene(self):
         w = self.engine.display.get_width()
@@ -48,28 +49,23 @@ class PlatformWorld(World):
 
         background_image = pygame.Surface((w, h))
         background_image.convert()
-        background_image.fill((12, 0, 40))
+        #background_image.fill((12, 0, 40))
+        #background_image.fill((6, 0, 20))
+        background_image.fill((0, 0, 0))
 
         # add necessary components to be able to position and render the background
-        background = self.create_entity()
-        background.add_component(Transform(Vector2(0, 0)))
-        background.add_component(Renderer(background_image))
+        background = self.create_renderable_object(background_image)
+        background.renderer.pivot = Vector2(0, 0)
         background.renderer.depth = 100
         background.renderer.is_static = True
 
-        lamp_light_img = pygame.image.load("assets/images/lamp_light_masks/lamp_light.png").convert_alpha()
-
-        img_width = lamp_light_img.get_width()
-        img_height = lamp_light_img.get_height()
-
-        pivot = Vector2(img_width/2, img_height/2)
-
-        # add necessary components to be able to position and render the background
-        self.lamp_mask = self.create_entity()
-        self.lamp_mask.add_component(Transform(Vector2(0, 0)))
-        self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
+        lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
+        self.lamp_mask = self.create_renderable_object(lamp_light_img)
         self.lamp_mask.renderer.depth = -100
+        self.lamp_mask.renderer.pivot.x -= 20
+        self.lamp_mask.renderer.pivot.y -= 20
 
+        self.load_backgrounds()
         self.load_player()
         self.load_ladders()
         self.load_floors()
@@ -92,6 +88,36 @@ class PlatformWorld(World):
         PhysicsSystem.gravity.y += 200
 
         self.add_script(UpdateAnimationHandler(self.player_anim_handler))
+
+    def load_backgrounds(self):
+
+        path = "assets/images/backgrounds/"
+        img = pygame.image.load(path + "eye_duck.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+        background.transform.position = Vector2(200, -300)
+
+        img = pygame.image.load(path + "horse.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+
+        x = 2600
+        background.transform.position = Vector2(x, -300)
+
+        w = img.get_width()
+        img = pygame.image.load(path + "all_toys.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+        background.transform.position = Vector2(x + w, -300)
+
+        img = pygame.image.load(path + "no_toys.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+        background.transform.position = Vector2(1300, -300)
 
     def load_ladders(self):
         path = "assets/images/ladders/"
@@ -197,7 +223,7 @@ class PlatformWorld(World):
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
 
-        floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert()
+        floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert_alpha()
 
         img = create_img_from_tile(floor_tile, w*2, 200)
         floor_a = self.create_game_object(img)
