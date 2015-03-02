@@ -24,6 +24,8 @@ class UpdateAnimationHandler(WorldScript):
         # make the lamp mask follow the player
         self.world.lamp_mask.transform.position = self.world.player.transform.position
 
+        #self.world.light_mask.transform.position = self.world.player.transform.position
+
 
 class PlatformWorld(World):
 
@@ -37,6 +39,8 @@ class PlatformWorld(World):
 
         self.lamp_mask = None
 
+        self.light_mask = None
+
     def load_scene(self):
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
@@ -45,6 +49,24 @@ class PlatformWorld(World):
         # world bounds
         self.width = 4600
         self.height = 1100
+
+        # load the light emission masks
+        # files = get_files_in_dir("assets/images/lamp_light_masks/light_emissions/")
+        #
+        # temp_surface = pygame.Surface((500, 500)).convert()
+        #
+        # for f in files:
+        #     img = pygame.image.load(f).convert_alpha()
+        #
+        #     temp_surface.blit(img, (0, 0))
+        #
+        # temp_surface.set_alpha(200)
+        # img_width = temp_surface.get_width()
+        # img_height = temp_surface.get_height()
+        # pivot = Vector2(img_width/2.0, img_height/2.0)
+        # self.light_mask = self.create_entity()
+        # self.light_mask.add_component(Transform(Vector2(0, 0)))
+        # self.light_mask.add_component(Renderer(temp_surface, pivot))
 
         background_image = pygame.Surface((w, h))
         background_image.convert()
@@ -290,19 +312,19 @@ class PlatformWorld(World):
             platform.collider.treat_as_dynamic = True
 
         # the elevator shaft
-        path = "assets/images/environment/elevator/"
-
-        elev_shaft_img = pygame.image.load(path + "elevator_shaft.png").convert_alpha()
-        elevator_shaft = self.create_entity()
-        elevator_shaft.add_component(Transform(Vector2(1100, -375)))
-        elevator_shaft.add_component(Renderer(elev_shaft_img))
-        elevator_shaft.renderer.depth = 50
-
-        elevator_cabin_img = pygame.image.load(path + "elevator.png").convert_alpha()
-        elevator_cabin = self.create_entity()
-        elevator_cabin.add_component(Transform(Vector2(1150, 600 - elevator_cabin_img.get_height())))
-        elevator_cabin.add_component(Renderer(elevator_cabin_img))
-        elevator_cabin.renderer.depth = 40
+        # path = "assets/images/environment/elevator/"
+        #
+        # elev_shaft_img = pygame.image.load(path + "elevator_shaft.png").convert_alpha()
+        # elevator_shaft = self.create_entity()
+        # elevator_shaft.add_component(Transform(Vector2(1100, -375)))
+        # elevator_shaft.add_component(Renderer(elev_shaft_img))
+        # elevator_shaft.renderer.depth = 50
+        #
+        # elevator_cabin_img = pygame.image.load(path + "elevator.png").convert_alpha()
+        # elevator_cabin = self.create_entity()
+        # elevator_cabin.add_component(Transform(Vector2(1150, 600 - elevator_cabin_img.get_height())))
+        # elevator_cabin.add_component(Renderer(elevator_cabin_img))
+        # elevator_cabin.renderer.depth = 40
 
     def load_boxes(self):
         box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
