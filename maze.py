@@ -142,6 +142,7 @@ class Maze(World):
         self.lever4 = None
         self.lever5 = None
         self.lever6 = None
+        self.lever7 = None
 
         # blocked path walls for each lever
         self.blocked1 = None
@@ -216,6 +217,14 @@ class Maze(World):
         animator_6 = Animator()
         animator_6.current_animation = animation
 
+        animation_1 = Animator.Animation()
+        animation_1.add_frame(off_switch_state_off)
+        animation_1.add_frame(off_switch_state_on)
+        animation_1.frame_latency = 0.5
+
+        animator_7 = Animator()
+        animator_7.current_animation = animation_1
+
         l1c = (14, 7)
         # self.lever1 = self.create_game_object(create_lever(l1c, (l1c[0]+1, l1c[1]+1)))
         self.lever1 = self.create_game_object(off_switch_state_off)
@@ -263,6 +272,14 @@ class Maze(World):
         _l6c = find_coordinate(l6c)
         self.lever6.transform.position = Vector2(_l6c[0], _l6c[1])
 
+        # coordinates.append((6, 8))
+        l7c = (6, 8)
+        self.lever7 = self.create_game_object(off_switch_state_off)
+        self.lever7.add_component(animator_7)
+        self.lever7.tag = "lever7_off"
+        _l7c = find_coordinate(l7c)
+        self.lever7.transform.position = Vector2(_l7c[0], _l7c[1])
+
     def construct_on_lever(self):
         l1c = (14, 7)
         self.lever1 = self.create_game_object(on_switch)
@@ -299,6 +316,12 @@ class Maze(World):
         self.lever6.tag = "lever6_on"
         _l6c = find_coordinate(l6c)
         self.lever6.transform.position = Vector2(_l6c[0], _l6c[1])
+
+        l7c = (6, 8)
+        self.lever7 = self.create_game_object(off_switch_state_off)
+        self.lever7.tag = "lever7_on"
+        _l7c = find_coordinate(l7c)
+        self.lever7.transform.position = Vector2(_l7c[0], _l7c[1])
 
     def construct_wall(self, c):
         # self.new_wall = self.create_game_object(create_wall(c, (c[0]+1, c[1]+1)))
@@ -575,7 +598,6 @@ class Maze(World):
         coordinates.append((6, 9))   # 180
         coordinates.append((7, 9))   # 181
         coordinates.append((7, 8))   # 182
-        coordinates.append((6, 8))   # 183
         coordinates.append((4, 11))
         coordinates.append((23, -1))
         coordinates.append((25, 5))
@@ -684,7 +706,7 @@ class Maze(World):
         coordinates.append((33, 9))
         coordinates.append((34, 9))
         coordinates.append((35, 9))
-        coordinates.append((-1, 1))
+        # coordinates.append((-1, 1))
 
         # =========================================Perimeter=======================================
 
@@ -759,6 +781,10 @@ class PlayerBehavior (BehaviorScript):
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever6_off":
             # print "You hit lever 6!"
+            self.touched_lever6 = True
+            self.entity.world.destroy_entity(other_entity)
+        elif other_entity.tag == "lever7_off":
+            # print "You hit lever 7!"
             self.touched_lever6 = True
             self.entity.world.destroy_entity(other_entity)
 
