@@ -71,9 +71,9 @@ class PlatformWorld(World):
         mixer.music.play(-1)
         mixer.music.set_volume(0.3)
 
-        self.add_script(UpdateAnimationHandler(self.player_anim_handler))
-
         PhysicsSystem.gravity.y += 200
+
+        self.add_script(UpdateAnimationHandler(self.player_anim_handler))
 
     def load_ladders(self):
         path = "assets/images/ladders/"
@@ -224,7 +224,7 @@ class PlatformWorld(World):
 
         self.player = self.create_game_object(starting_image)
         self.player.add_component(RigidBody())
-        self.player.transform.position = Vector2(230, 480)
+        self.player.transform.position = Vector2(230, 580)
         self.player.transform.scale = Vector2(1, 1)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 2
@@ -366,9 +366,9 @@ class PlatformWorld(World):
         ladder.collider.is_trigger = True
         ladder.transform.position = Vector2(x, y)
 
-        #ladder.collider.box.w -= 80
-        ladder.collider.box.w -= 80
-        ladder.collider.box.h -= 50
+        new_w = ladder.collider.box.w - 80
+        new_h = ladder.collider.box.h - 50
+        ladder.collider.set_box(new_w, new_h)
 
         ladder.tag = "ladder"
 
