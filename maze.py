@@ -806,7 +806,7 @@ class Maze(World):
         coordinates.append((33, 9))
         coordinates.append((34, 9))
         coordinates.append((35, 9))
-        # coordinates.append((-1, 1))
+        coordinates.append((-1, 1))
 
         # =========================================Perimeter=======================================
 
