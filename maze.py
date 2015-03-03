@@ -13,19 +13,19 @@ off_switch_state_on = pygame.image.load("assets/images/tiles/56x100_switchOFF.pn
 off_switch_state_off = pygame.image.load("assets/images/tiles/56x100_switchNORM.png").convert()
 on_switch = pygame.image.load("assets/images/tiles/56x100_switchON.png").convert()
 
-player_image_north = pygame.image.load("assets/images/character_new/character_north.png").convert_alpha()
-player_image_south = pygame.image.load("assets/images/character_new/character_south.png").convert_alpha()
-player_image_east = pygame.image.load("assets/images/character_new/character_east.png").convert_alpha()
-player_image_west = pygame.image.load("assets/images/character_new/character_west.png").convert_alpha()
+player_image_north = pygame.image.load("assets/images/character/character_north.png").convert_alpha()
+player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
+player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
+player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
 
 
-player_image_northeast = pygame.image.load("assets/images/character_new/character_northeast.png").convert_alpha()
-player_image_northwest = pygame.image.load("assets/images/character_new/character_northwest.png").convert_alpha()
-player_image_southeast = pygame.image.load("assets/images/character_new/character_southeast.png").convert_alpha()
-player_image_southwest = pygame.image.load("assets/images/character_new/character_southwest.png").convert_alpha()
+player_image_northeast = pygame.image.load("assets/images/character/character_northeast.png").convert_alpha()
+player_image_northwest = pygame.image.load("assets/images/character/character_northwest.png").convert_alpha()
+player_image_southeast = pygame.image.load("assets/images/character/character_southeast.png").convert_alpha()
+player_image_southwest = pygame.image.load("assets/images/character/character_southwest.png").convert_alpha()
 
 
-lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
+lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_1200x700.png").convert_alpha()
 
 mixer.music.load("assets/music/VoiceInMyHead.ogg")
 
