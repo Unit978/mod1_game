@@ -13,19 +13,19 @@ off_switch_state_on = pygame.image.load("assets/images/tiles/56x100_switchOFF.pn
 off_switch_state_off = pygame.image.load("assets/images/tiles/56x100_switchNORM.png").convert()
 on_switch = pygame.image.load("assets/images/tiles/56x100_switchON.png").convert()
 
-player_image_north = pygame.image.load("assets/images/character_new/character_north.png").convert_alpha()
-player_image_south = pygame.image.load("assets/images/character_new/character_south.png").convert_alpha()
-player_image_east = pygame.image.load("assets/images/character_new/character_east.png").convert_alpha()
-player_image_west = pygame.image.load("assets/images/character_new/character_west.png").convert_alpha()
+player_image_north = pygame.image.load("assets/images/character/character_north.png").convert_alpha()
+player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
+player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
+player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
 
 
-player_image_northeast = pygame.image.load("assets/images/character_new/character_northeast.png").convert_alpha()
-player_image_northwest = pygame.image.load("assets/images/character_new/character_northwest.png").convert_alpha()
-player_image_southeast = pygame.image.load("assets/images/character_new/character_southeast.png").convert_alpha()
-player_image_southwest = pygame.image.load("assets/images/character_new/character_southwest.png").convert_alpha()
+player_image_northeast = pygame.image.load("assets/images/character/character_northeast.png").convert_alpha()
+player_image_northwest = pygame.image.load("assets/images/character/character_northwest.png").convert_alpha()
+player_image_southeast = pygame.image.load("assets/images/character/character_southeast.png").convert_alpha()
+player_image_southwest = pygame.image.load("assets/images/character/character_southwest.png").convert_alpha()
 
 
-lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
+lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_1200x700.png").convert_alpha()
 
 mixer.music.load("assets/music/VoiceInMyHead.ogg")
 
@@ -78,6 +78,7 @@ class PlayerMovement(BehaviorScript):
         self.speed = 200.0
 
     def update(self):
+
         keys = pygame.key.get_pressed()
 
         velocity = self.entity.rigid_body.velocity
@@ -111,12 +112,6 @@ class PlayerMovement(BehaviorScript):
 
         elif keys[pygame.K_s] and keys[pygame.K_a]:
             self.entity.renderer.sprite = player_image_southwest
-
-    def take_input(self, event):
-        pass
-        # if event.type == pygame.KEYDOWN:
-        #     if event.key == pygame.K_SPACE:
-        #         self.entity.rigid_body.velocity.y = -self.v_speed
 
 
 class Maze(World):
@@ -431,296 +426,10 @@ class Maze(World):
         self.player.collider.set_box(30, 30)
 
         # =============================================Static Maze Tiles==========================
-        coordinates = []
-        coordinates.append((0, 1))  # 1
-        coordinates.append((0, 2))  # 2
-        coordinates.append((0, 3))  # 3
-        coordinates.append((0, 4))  # 4
-        coordinates.append((1, 4))  # 5
-        coordinates.append((2, 4))  # 6
-        coordinates.append((2, 5))  # 7
-        coordinates.append((3, 6))  # 8
-        coordinates.append((4, 6))  # 9
-        coordinates.append((5, 6))  # 10
-        coordinates.append((6, 6))  # 11
-        coordinates.append((2, 1))  # 12
-        coordinates.append((2, 2))  # 13
-        coordinates.append((3, 2))  # 14
-        coordinates.append((4, 2))  # 15
-        coordinates.append((4, 3))  # 16
-        coordinates.append((4, 4))  # 17
-        coordinates.append((5, 4))  # 18
-        coordinates.append((7, 6))  # 19
-        coordinates.append((7, 5))  # 20
-        coordinates.append((7, 4))  # 21
-        coordinates.append((7, 3))  # 22
-        coordinates.append((6, 2))  # 23
-        coordinates.append((7, 2))  # 24
-        coordinates.append((8, 2))  # 25
-        coordinates.append((4, 1))  # 26
-        coordinates.append((4, 0))  # 27
-        coordinates.append((5, 0))  # 28
-        coordinates.append((6, 0))  # 29
-        coordinates.append((7, 0))  # 30
-        coordinates.append((8, 0))  # 31
-        coordinates.append((9, 0))  # 32
-        coordinates.append((10, 0))  # 33
-        coordinates.append((10, 1))  # 34
-        coordinates.append((10, 2))  # 35
-        coordinates.append((10, 3))  # 36
-        coordinates.append((10, 4))  # 37
-        coordinates.append((9, 4))   # 38
-        coordinates.append((8, 6))   # 39
-        coordinates.append((9, 6))   # 40
-        coordinates.append((10, 6))  # 41
-        coordinates.append((10, 7))  # 42
-        coordinates.append((10, 8))  # 43
-        coordinates.append((10, 9))  # 44
-        coordinates.append((10, 10))  # 45
-        coordinates.append((11, 10))  # 46
-        coordinates.append((12, 10))  # 47
-        coordinates.append((13, 10))  # 48
-        coordinates.append((14, 10))  # 49
-        coordinates.append((15, 10))  # 50
-        coordinates.append((16, 10))  # 51
-        coordinates.append((17, 10))  # 52
-        coordinates.append((17, 9))  # 53
-        coordinates.append((17, 8))  # 54
-        coordinates.append((17, 7))  # 55
-        coordinates.append((17, 6))  # 56
-        coordinates.append((17, 5))  # 57
-        coordinates.append((17, 4))  # 58
-        coordinates.append((11, 4))  # 59
-        coordinates.append((12, 5))  # 60
-        coordinates.append((12, 6))  # 61
-        coordinates.append((12, 7))  # 62
-        coordinates.append((13, 7))  # 63
-        coordinates.append((12, 8))  # 64
-        coordinates.append((13, 8))  # 65
-        coordinates.append((14, 8))  # 66
-        coordinates.append((15, 8))  # 67
-        coordinates.append((15, 7))  # 68
-        coordinates.append((15, 6))  # 69
-        coordinates.append((15, 5))  # 70
-        coordinates.append((14, 5))  # 71
-        coordinates.append((13, 3))  # 72
-        coordinates.append((14, 3))  # 73
-        coordinates.append((15, 3))  # 74
-        coordinates.append((16, 3))  # 75
-        coordinates.append((13, 2))  # 76
-        coordinates.append((14, 2))  # 77
-        coordinates.append((15, 2))  # 78
-        coordinates.append((16, 2))  # 79
-        coordinates.append((11, 3))  # 80
-        coordinates.append((11, 2))  # 81
-        coordinates.append((11, 1))  # 82
-        coordinates.append((11, 0))  # 83
-        coordinates.append((12, 0))  # 84
-        coordinates.append((13, 0))  # 85
-        coordinates.append((14, 0))  # 86
-        coordinates.append((15, 0))  # 87
-        coordinates.append((16, 0))  # 88
-        coordinates.append((17, 0))  # 89
-        coordinates.append((18, 0))  # 90
-        coordinates.append((18, 1))  # 91
-        coordinates.append((18, 2))  # 92
-        coordinates.append((19, 2))  # 93
-        coordinates.append((19, 3))  # 94
-        coordinates.append((19, 4))  # 95
-        coordinates.append((19, 5))  # 96
-        coordinates.append((20, 5))  # 97
-        coordinates.append((21, 5))  # 98
-        coordinates.append((22, 5))  # 99
-        coordinates.append((18, 7))  # 100
-        coordinates.append((19, 7))  # 101
-        coordinates.append((20, 7))  # 102
-        coordinates.append((21, 7))  # 103
-        coordinates.append((22, 7))  # 104
-        coordinates.append((24, 7))  # 105
-        coordinates.append((24, 5))  # 107
-        coordinates.append((24, 4))  # 108
-        coordinates.append((24, 3))  # 109
-        coordinates.append((23, 3))  # 110
-        coordinates.append((22, 3))  # 111
-        coordinates.append((21, 3))  # 112
-        coordinates.append((19, 1))  # 113
-        coordinates.append((20, 1))  # 114
-        coordinates.append((21, 1))  # 115
-        coordinates.append((22, 1))  # 116
-        coordinates.append((24, 2))  # 117
-        coordinates.append((24, 1))  # 118
-        coordinates.append((22, 0))  # 119
-        coordinates.append((24, 0))  # 120
-        coordinates.append((22, 8))  # 121
-        coordinates.append((22, 9))  # 122
-        coordinates.append((22, 10))  # 123
-        coordinates.append((21, 10))  # 124
-        coordinates.append((20, 10))  # 125
-        coordinates.append((19, 10))  # 126
-        coordinates.append((18, 10))  # 127
-        coordinates.append((24, 8))   # 128
-        coordinates.append((24, 9))   # 129
-        coordinates.append((24, 10))  # 130
-        coordinates.append((24, 11))  # 131
-        coordinates.append((24, 12))  # 132
-        coordinates.append((23, 12))  # 133
-        coordinates.append((22, 12))  # 134
-        coordinates.append((21, 12))  # 135
-        coordinates.append((20, 12))  # 136
-        coordinates.append((19, 12))   # 137
-        coordinates.append((18, 12))   # 138
-        coordinates.append((17, 12))   # 139
-        coordinates.append((15, 12))   # 141
-        coordinates.append((14, 12))   # 142
-        coordinates.append((13, 12))   # 143
-        coordinates.append((12, 12))   # 144
-        coordinates.append((11, 12))   # 145
-        coordinates.append((10, 12))   # 146
-        coordinates.append((9, 13))   # 147
-        coordinates.append((9, 10))   # 148
-        coordinates.append((8, 11))   # 149
-        coordinates.append((7, 11))   # 150
-        coordinates.append((8, 13))   # 151
-        coordinates.append((7, 13))   # 152
-        coordinates.append((6, 13))   # 153
-        coordinates.append((6, 11))   # 154
-        coordinates.append((5, 11))   # 155
-        coordinates.append((4, 13))   # 157
-        coordinates.append((3, 13))   # 158
-        coordinates.append((2, 13))   # 159
-        coordinates.append((1, 13))   # 160
-        coordinates.append((0, 13))   # 161
-        coordinates.append((3, 11))   # 162
-        coordinates.append((2, 11))   # 163
-        coordinates.append((1, 11))   # 164
-        coordinates.append((1, 10))   # 165
-        coordinates.append((1, 9))   # 166
-        coordinates.append((1, 8))   # 167
-        coordinates.append((1, 6))   # 169
-        coordinates.append((1, 5))   # 170
-        coordinates.append((0, 5))   # 171
-        coordinates.append((2, 6))   # 172
-        coordinates.append((2, 8))   # 173
-        coordinates.append((2, 9))   # 174
-        coordinates.append((2, 10))   # 175
-        coordinates.append((4, 7))   # 176
-        coordinates.append((4, 8))   # 177
-        coordinates.append((4, 9))   # 178
-        coordinates.append((5, 9))   # 179
-        coordinates.append((6, 9))   # 180
-        coordinates.append((7, 9))   # 181
-        coordinates.append((7, 8))   # 182
-        coordinates.append((4, 11))
-        coordinates.append((23, -1))
-        coordinates.append((25, 5))
-        coordinates.append((26, 5))
-        coordinates.append((28, 5))
-        coordinates.append((28, 4))
-        coordinates.append((28, 3))
-        coordinates.append((28, 2))
-        coordinates.append((28, 1))
-        coordinates.append((28, 0))
-        coordinates.append((28, -1))
-        coordinates.append((26, 4))
-        coordinates.append((26, 2))
-        coordinates.append((26, 1))
-        coordinates.append((25, -1))
-        coordinates.append((27, 0))
-        coordinates.append((26, 6))
-        coordinates.append((26, 7))
-        coordinates.append((26, 8))
-        coordinates.append((27, 8))
-        coordinates.append((28, 8))
-        coordinates.append((28, 9))
-        coordinates.append((28, 10))
-        coordinates.append((26, 10))
-        coordinates.append((26, 11))
-        coordinates.append((26, 12))
-        coordinates.append((27, 12))
-        coordinates.append((26, 13))
-        coordinates.append((24, 14))
-        coordinates.append((22, 13))
-        coordinates.append((20, 14))
-        coordinates.append((18, 13))
-        coordinates.append((17, 13))
-        coordinates.append((17, 14))
-        coordinates.append((27, 13))
-        coordinates.append((28, 13))
-        coordinates.append((29, 13))
-        coordinates.append((29, 12))
-        coordinates.append((30, 12))
-        coordinates.append((30, 11))
-        coordinates.append((30, 10))
-        coordinates.append((30, 9))
-        coordinates.append((31, 9))
-        coordinates.append((30, 7))
-        coordinates.append((31, 7))
-        coordinates.append((32, 7))
-        coordinates.append((32, 6))
-        coordinates.append((32, 5))
-        coordinates.append((32, 4))
-        coordinates.append((32, 3))
-        coordinates.append((32, 2))
-        coordinates.append((31, 1))
-        coordinates.append((31, 0))
-        coordinates.append((32, 0))
-        coordinates.append((33, 0))
-        coordinates.append((34, 0))
-        coordinates.append((35, 1))
-        coordinates.append((36, 1))
-        coordinates.append((36, 2))
-        coordinates.append((36, 3))
-        coordinates.append((35, 3))
-        coordinates.append((34, 3))
-        coordinates.append((34, 4))
-        coordinates.append((34, 5))
-        coordinates.append((34, 6))
-        coordinates.append((34, 7))
-        coordinates.append((35, 7))
-        coordinates.append((36, 7))
-        coordinates.append((39, 0))
-        coordinates.append((40, 0))
-        coordinates.append((38, 1))
-        coordinates.append((38, 2))
-        coordinates.append((38, 3))
-        coordinates.append((38, 4))
-        coordinates.append((39, 5))
-        coordinates.append((38, 5))
-        coordinates.append((37, 5))
-        coordinates.append((36, 5))
-        coordinates.append((39, 6))
-        coordinates.append((39, 7))
-        coordinates.append((39, 8))
-        coordinates.append((39, 9))
-        coordinates.append((39, 10))
-        coordinates.append((39, 11))
-        coordinates.append((39, 12))
-        coordinates.append((39, 13))
-        coordinates.append((38, 13))
-        coordinates.append((37, 13))
-        coordinates.append((36, 13))
-        coordinates.append((35, 13))
-        coordinates.append((34, 13))
-        coordinates.append((33, 13))
-        coordinates.append((32, 13))
-        coordinates.append((31, 13))
-        coordinates.append((30, 13))
-        coordinates.append((39, 8))
-        coordinates.append((36, 8))
-        coordinates.append((36, 9))
-        coordinates.append((36, 10))
-        coordinates.append((36, 11))
-        coordinates.append((35, 11))
-        coordinates.append((34, 11))
-        coordinates.append((33, 11))
-        coordinates.append((32, 11))
-        coordinates.append((32, 9))
-        coordinates.append((33, 9))
-        coordinates.append((34, 9))
-        coordinates.append((35, 9))
-        coordinates.append((-1, 1))
 
         # =========================================Perimeter=======================================
+
+        coordinates = create_coordinates()
 
         # top perimeter
         for i in range(-1, 42):
@@ -742,6 +451,10 @@ class Maze(World):
         render = self.get_system(RenderSystem.tag)
         render.camera = self.create_entity()
         render.camera.add_component(Transform(Vector2(0, 0)))
+
+        w = self.engine.display.get_width()
+        h = self.engine.display.get_height()
+
         render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
         # ====================================Construct Maze======================================
         # create levers to be triggered by player
@@ -840,6 +553,301 @@ class PlayerBehavior (BehaviorScript):
             blocked_wall.play()
         elif other_entity.tag == "blocked6" and self.touched_lever6 is False:
             blocked_wall.play()
+
+
+def create_coordinates():
+
+    coordinates = list()
+
+    coordinates.append((0, 1))  # 1
+    coordinates.append((0, 2))  # 2
+    coordinates.append((0, 3))  # 3
+    coordinates.append((0, 4))  # 4
+    coordinates.append((1, 4))  # 5
+    coordinates.append((2, 4))  # 6
+    coordinates.append((2, 5))  # 7
+    coordinates.append((3, 6))  # 8
+    coordinates.append((4, 6))  # 9
+    coordinates.append((5, 6))  # 10
+    coordinates.append((6, 6))  # 11
+    coordinates.append((2, 1))  # 12
+    coordinates.append((2, 2))  # 13
+    coordinates.append((3, 2))  # 14
+    coordinates.append((4, 2))  # 15
+    coordinates.append((4, 3))  # 16
+    coordinates.append((4, 4))  # 17
+    coordinates.append((5, 4))  # 18
+    coordinates.append((7, 6))  # 19
+    coordinates.append((7, 5))  # 20
+    coordinates.append((7, 4))  # 21
+    coordinates.append((7, 3))  # 22
+    coordinates.append((6, 2))  # 23
+    coordinates.append((7, 2))  # 24
+    coordinates.append((8, 2))  # 25
+    coordinates.append((4, 1))  # 26
+    coordinates.append((4, 0))  # 27
+    coordinates.append((5, 0))  # 28
+    coordinates.append((6, 0))  # 29
+    coordinates.append((7, 0))  # 30
+    coordinates.append((8, 0))  # 31
+    coordinates.append((9, 0))  # 32
+    coordinates.append((10, 0))  # 33
+    coordinates.append((10, 1))  # 34
+    coordinates.append((10, 2))  # 35
+    coordinates.append((10, 3))  # 36
+    coordinates.append((10, 4))  # 37
+    coordinates.append((9, 4))   # 38
+    coordinates.append((8, 6))   # 39
+    coordinates.append((9, 6))   # 40
+    coordinates.append((10, 6))  # 41
+    coordinates.append((10, 7))  # 42
+    coordinates.append((10, 8))  # 43
+    coordinates.append((10, 9))  # 44
+    coordinates.append((10, 10))  # 45
+    coordinates.append((11, 10))  # 46
+    coordinates.append((12, 10))  # 47
+    coordinates.append((13, 10))  # 48
+    coordinates.append((14, 10))  # 49
+    coordinates.append((15, 10))  # 50
+    coordinates.append((16, 10))  # 51
+    coordinates.append((17, 10))  # 52
+    coordinates.append((17, 9))  # 53
+    coordinates.append((17, 8))  # 54
+    coordinates.append((17, 7))  # 55
+    coordinates.append((17, 6))  # 56
+    coordinates.append((17, 5))  # 57
+    coordinates.append((17, 4))  # 58
+    coordinates.append((11, 4))  # 59
+    coordinates.append((12, 5))  # 60
+    coordinates.append((12, 6))  # 61
+    coordinates.append((12, 7))  # 62
+    coordinates.append((13, 7))  # 63
+    coordinates.append((12, 8))  # 64
+    coordinates.append((13, 8))  # 65
+    coordinates.append((14, 8))  # 66
+    coordinates.append((15, 8))  # 67
+    coordinates.append((15, 7))  # 68
+    coordinates.append((15, 6))  # 69
+    coordinates.append((15, 5))  # 70
+    coordinates.append((14, 5))  # 71
+    coordinates.append((13, 3))  # 72
+    coordinates.append((14, 3))  # 73
+    coordinates.append((15, 3))  # 74
+    coordinates.append((16, 3))  # 75
+    coordinates.append((13, 2))  # 76
+    coordinates.append((14, 2))  # 77
+    coordinates.append((15, 2))  # 78
+    coordinates.append((16, 2))  # 79
+    coordinates.append((11, 3))  # 80
+    coordinates.append((11, 2))  # 81
+    coordinates.append((11, 1))  # 82
+    coordinates.append((11, 0))  # 83
+    coordinates.append((12, 0))  # 84
+    coordinates.append((13, 0))  # 85
+    coordinates.append((14, 0))  # 86
+    coordinates.append((15, 0))  # 87
+    coordinates.append((16, 0))  # 88
+    coordinates.append((17, 0))  # 89
+    coordinates.append((18, 0))  # 90
+    coordinates.append((18, 1))  # 91
+    coordinates.append((18, 2))  # 92
+    coordinates.append((19, 2))  # 93
+    coordinates.append((19, 3))  # 94
+    coordinates.append((19, 4))  # 95
+    coordinates.append((19, 5))  # 96
+    coordinates.append((20, 5))  # 97
+    coordinates.append((21, 5))  # 98
+    coordinates.append((22, 5))  # 99
+    coordinates.append((18, 7))  # 100
+    coordinates.append((19, 7))  # 101
+    coordinates.append((20, 7))  # 102
+    coordinates.append((21, 7))  # 103
+    coordinates.append((22, 7))  # 104
+    coordinates.append((24, 7))  # 105
+    coordinates.append((24, 5))  # 107
+    coordinates.append((24, 4))  # 108
+    coordinates.append((24, 3))  # 109
+    coordinates.append((23, 3))  # 110
+    coordinates.append((22, 3))  # 111
+    coordinates.append((21, 3))  # 112
+    coordinates.append((19, 1))  # 113
+    coordinates.append((20, 1))  # 114
+    coordinates.append((21, 1))  # 115
+    coordinates.append((22, 1))  # 116
+    coordinates.append((24, 2))  # 117
+    coordinates.append((24, 1))  # 118
+    coordinates.append((22, 0))  # 119
+    coordinates.append((24, 0))  # 120
+    coordinates.append((22, 8))  # 121
+    coordinates.append((22, 9))  # 122
+    coordinates.append((22, 10))  # 123
+    coordinates.append((21, 10))  # 124
+    coordinates.append((20, 10))  # 125
+    coordinates.append((19, 10))  # 126
+    coordinates.append((18, 10))  # 127
+    coordinates.append((24, 8))   # 128
+    coordinates.append((24, 9))   # 129
+    coordinates.append((24, 10))  # 130
+    coordinates.append((24, 11))  # 131
+    coordinates.append((24, 12))  # 132
+    coordinates.append((23, 12))  # 133
+    coordinates.append((22, 12))  # 134
+    coordinates.append((21, 12))  # 135
+    coordinates.append((20, 12))  # 136
+    coordinates.append((19, 12))   # 137
+    coordinates.append((18, 12))   # 138
+    coordinates.append((17, 12))   # 139
+    coordinates.append((15, 12))   # 141
+    coordinates.append((14, 12))   # 142
+    coordinates.append((13, 12))   # 143
+    coordinates.append((12, 12))   # 144
+    coordinates.append((11, 12))   # 145
+    coordinates.append((10, 12))   # 146
+    coordinates.append((9, 13))   # 147
+    coordinates.append((9, 10))   # 148
+    coordinates.append((8, 11))   # 149
+    coordinates.append((7, 11))   # 150
+    coordinates.append((8, 13))   # 151
+    coordinates.append((7, 13))   # 152
+    coordinates.append((6, 13))   # 153
+    coordinates.append((6, 11))   # 154
+    coordinates.append((5, 11))   # 155
+    coordinates.append((4, 13))   # 157
+    coordinates.append((3, 13))   # 158
+    coordinates.append((2, 13))   # 159
+    coordinates.append((1, 13))   # 160
+    coordinates.append((0, 13))   # 161
+    coordinates.append((3, 11))   # 162
+    coordinates.append((2, 11))   # 163
+    coordinates.append((1, 11))   # 164
+    coordinates.append((1, 10))   # 165
+    coordinates.append((1, 9))   # 166
+    coordinates.append((1, 8))   # 167
+    coordinates.append((1, 6))   # 169
+    coordinates.append((1, 5))   # 170
+    coordinates.append((0, 5))   # 171
+    coordinates.append((2, 6))   # 172
+    coordinates.append((2, 8))   # 173
+    coordinates.append((2, 9))   # 174
+    coordinates.append((2, 10))   # 175
+    coordinates.append((4, 7))   # 176
+    coordinates.append((4, 8))   # 177
+    coordinates.append((4, 9))   # 178
+    coordinates.append((5, 9))   # 179
+    coordinates.append((6, 9))   # 180
+    coordinates.append((7, 9))   # 181
+    coordinates.append((7, 8))   # 182
+    coordinates.append((4, 11))
+    coordinates.append((23, -1))
+    coordinates.append((25, 5))
+    coordinates.append((26, 5))
+    coordinates.append((28, 5))
+    coordinates.append((28, 4))
+    coordinates.append((28, 3))
+    coordinates.append((28, 2))
+    coordinates.append((28, 1))
+    coordinates.append((28, 0))
+    coordinates.append((28, -1))
+    coordinates.append((26, 4))
+    coordinates.append((26, 2))
+    coordinates.append((26, 1))
+    coordinates.append((25, -1))
+    coordinates.append((27, 0))
+    coordinates.append((26, 6))
+    coordinates.append((26, 7))
+    coordinates.append((26, 8))
+    coordinates.append((27, 8))
+    coordinates.append((28, 8))
+    coordinates.append((28, 9))
+    coordinates.append((28, 10))
+    coordinates.append((26, 10))
+    coordinates.append((26, 11))
+    coordinates.append((26, 12))
+    coordinates.append((27, 12))
+    coordinates.append((26, 13))
+    coordinates.append((24, 14))
+    coordinates.append((22, 13))
+    coordinates.append((20, 14))
+    coordinates.append((18, 13))
+    coordinates.append((17, 13))
+    coordinates.append((17, 14))
+    coordinates.append((27, 13))
+    coordinates.append((28, 13))
+    coordinates.append((29, 13))
+    coordinates.append((29, 12))
+    coordinates.append((30, 12))
+    coordinates.append((30, 11))
+    coordinates.append((30, 10))
+    coordinates.append((30, 9))
+    coordinates.append((31, 9))
+    coordinates.append((30, 7))
+    coordinates.append((31, 7))
+    coordinates.append((32, 7))
+    coordinates.append((32, 6))
+    coordinates.append((32, 5))
+    coordinates.append((32, 4))
+    coordinates.append((32, 3))
+    coordinates.append((32, 2))
+    coordinates.append((31, 1))
+    coordinates.append((31, 0))
+    coordinates.append((32, 0))
+    coordinates.append((33, 0))
+    coordinates.append((34, 0))
+    coordinates.append((35, 1))
+    coordinates.append((36, 1))
+    coordinates.append((36, 2))
+    coordinates.append((36, 3))
+    coordinates.append((35, 3))
+    coordinates.append((34, 3))
+    coordinates.append((34, 4))
+    coordinates.append((34, 5))
+    coordinates.append((34, 6))
+    coordinates.append((34, 7))
+    coordinates.append((35, 7))
+    coordinates.append((36, 7))
+    coordinates.append((39, 0))
+    coordinates.append((40, 0))
+    coordinates.append((38, 1))
+    coordinates.append((38, 2))
+    coordinates.append((38, 3))
+    coordinates.append((38, 4))
+    coordinates.append((39, 5))
+    coordinates.append((38, 5))
+    coordinates.append((37, 5))
+    coordinates.append((36, 5))
+    coordinates.append((39, 6))
+    coordinates.append((39, 7))
+    coordinates.append((39, 8))
+    coordinates.append((39, 9))
+    coordinates.append((39, 10))
+    coordinates.append((39, 11))
+    coordinates.append((39, 12))
+    coordinates.append((39, 13))
+    coordinates.append((38, 13))
+    coordinates.append((37, 13))
+    coordinates.append((36, 13))
+    coordinates.append((35, 13))
+    coordinates.append((34, 13))
+    coordinates.append((33, 13))
+    coordinates.append((32, 13))
+    coordinates.append((31, 13))
+    coordinates.append((30, 13))
+    coordinates.append((39, 8))
+    coordinates.append((36, 8))
+    coordinates.append((36, 9))
+    coordinates.append((36, 10))
+    coordinates.append((36, 11))
+    coordinates.append((35, 11))
+    coordinates.append((34, 11))
+    coordinates.append((33, 11))
+    coordinates.append((32, 11))
+    coordinates.append((32, 9))
+    coordinates.append((33, 9))
+    coordinates.append((34, 9))
+    coordinates.append((35, 9))
+    coordinates.append((-1, 1))
+
+    return coordinates
 
 engine.set_world(Maze())
 engine.run()
