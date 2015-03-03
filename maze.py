@@ -27,8 +27,6 @@ player_image_southwest = pygame.image.load("assets/images/character/character_so
 
 lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_1200x700.png").convert_alpha()
 
-mixer.music.load("assets/music/VoiceInMyHead.ogg")
-
 bump_sound = mixer.Sound("assets/sound/bump.WAV")
 block_removed = mixer.Sound("assets/sound/dooropen.WAV")
 blocked_wall = mixer.Sound("assets/sound/effect_ice1.WAV")
@@ -165,6 +163,9 @@ class Maze(World):
 
         # this object signals that the player completed the puzzle and can exit the maze
         self.exit_object_trigger = None
+
+    def resume(self):
+        mixer.music.load("assets/music/VoiceInMyHead.ogg")
 
     def construct_blocked_walls(self):
         l1c = (12, 4)
@@ -442,7 +443,7 @@ class Maze(World):
         self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
         self.lamp_mask.renderer.depth = -100
 
-        PhysicsSystem.gravity.zero()
+        self.get_system(PhysicsSystem.tag).gravity.zero()
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
         background_image = pygame.Surface((w, h))
@@ -949,6 +950,6 @@ class PlayerBehavior (BehaviorScript):
             blocked_wall.play()
         elif other_entity.tag == "blocked7" and self.touched_lever6 is False:
             blocked_wall.play()
-
-engine.set_world(Maze())
-engine.run()
+#
+# engine.set_world(Maze())
+# engine.run()
