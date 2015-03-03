@@ -22,13 +22,6 @@ class CameraFollow(BehaviorScript):
         x = self.target_transform.position.x - self.width/2
         y = self.target_transform.position.y - self.height/2
 
-        renderer = self.target_transform.entity.renderer
-
-        # center around the image attached to the target transform
-        if renderer is not None:
-            x += renderer.sprite.get_width()/2
-            y += renderer.sprite.get_height()/2
-
         world = self.entity.world
 
         # keep camera within world bounds
