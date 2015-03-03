@@ -11,6 +11,41 @@ engine = Engine(1200, 700)
 monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
 
 
+class BookShelfInteraction(BehaviorScript):
+
+    def __init__(self):
+        super(BookShelfInteraction, self).__init__("book shelf interaction")
+
+        self.showing_hint = False
+
+        self.hints = list()
+
+    def update(self):
+        pass
+
+    def take_input(self, event):
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            # interacted with book shelve
+            if not self.showing_hint:
+                x_mouse = pygame.mouse.get_pos()[0]
+                y_mouse = pygame.mouse.get_pos()[1]
+
+                mouse_rect = Rect(x_mouse, y_mouse, 5, 5)
+
+                for book_shelf in self.entity.world.book_shelves:
+
+                    # player must be touching book shelf
+                    if PhysicsSystem.box2box_collision(self.entity.collider, book_shelf.collider):
+
+                        # player clicked on book shelf
+                        if mouse_rect.colliderect(book_shelf.collider.box):
+                            self.showing_hint = True
+
+
+
+
 class ExitMainRoom(WorldScript):
 
     def __init__(self):
@@ -273,6 +308,8 @@ class PlatformWorld(World):
 
         self.lamp_lights = list()
 
+        self.book_shelves = list()
+
     def resume(self):
         # load music to play in the background
         mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
@@ -340,6 +377,9 @@ class PlatformWorld(World):
         for e in self.entity_manager.entities:
             if e.tag == "lamp light":
                 self.lamp_lights.append(e)
+
+            elif e.tag == "book shelf":
+                self.book_shelves.append(e)
 
         self.add_script(ExitMainRoom())
 
@@ -681,6 +721,7 @@ class PlatformWorld(World):
         self.player.add_script(DeactivateSaw())
         self.player.add_script(HandleLightLife())
         self.player.add_script(GoToOtherLevel())
+        self.player.add_script(BookShelfInteraction())
 
         # add animator to player from the animation state machine
         self.player.add_component(self.player_anim_handler.animator)
