@@ -418,18 +418,6 @@ class Maze(World):
         c = find_coordinate((7, 10))
         new_wall.transform.position = Vector2(c[0], c[1])
 
-        # bottom_right_curve = pygame.image.load("assets/images/tiles/curve_bottom_right.png").convert_alpha()
-        #
-        # new_wall = self.create_renderable_object(bottom_right_curve)
-        # c = find_coordinate((8, 10))
-        # new_wall.transform.position = Vector2(c[0], c[1])
-        #
-        # bottom_left_curve = pygame.image.load("assets/images/tiles/curve_bottom_left.png").convert_alpha()
-        #
-        # new_wall = self.create_renderable_object(bottom_left_curve)
-        # c = find_coordinate((3, 10))
-        # new_wall.transform.position = Vector2(c[0], c[1])
-
     def load_scene(self):
 
         img_width = lamp_light_img.get_width()
@@ -875,7 +863,7 @@ class PlayerBehavior (BehaviorScript):
 
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
-        # hits lever 1-6
+        # hits lever 1-7
         if other_entity.tag == "lever1_off":
             # print "You hit lever 1!"
             self.touched_lever1 = True
@@ -933,10 +921,6 @@ class PlayerBehavior (BehaviorScript):
             else:
                 print "puzzle is not complete"
 
-        if other_entity.tag == "wall":
-            # bump_sound.play()
-            pass
-
         if other_entity.tag == "blocked1" and self.touched_lever1 is False:
             blocked_wall.play()
         elif other_entity.tag == "blocked2" and self.touched_lever2 is False:
@@ -950,7 +934,6 @@ class PlayerBehavior (BehaviorScript):
         elif other_entity.tag == "blocked6" and self.touched_lever6 is False:
             blocked_wall.play()
         elif other_entity.tag == "blocked7" and self.touched_lever6 is False:
-            print "hit blocked 7"
             blocked_wall.play()
 
 engine.set_world(Maze())
