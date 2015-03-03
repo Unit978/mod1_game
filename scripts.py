@@ -222,26 +222,11 @@ class PlayerPlatformMovement(BehaviorScript):
         tag = other_collider.entity.tag
 
         # collided with a wall, floor, platform
-        if tag == "wall" or tag == "floor" or tag == "platform" or "box":
+        if tag == "wall" or tag == "floor" or tag == "platform" or tag == "box" or tag == "cabin":
 
             # hit from the top which means that this collider bottom side was hit by the other collider
             if PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider) == PhysicsSystem.bottom:
                 self.grounded = True
-
-        # collides with a crate
-        # if other_collider.entity.tag == "box":
-        #
-        #     # check if the player hits the box from the sides
-        #     side = PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider)
-        #
-        #     direction = 1
-        #     # hit the other object from the left
-        #     if side == PhysicsSystem.left:
-        #         direction = -1
-        #
-        #     if side == PhysicsSystem.left or side == PhysicsSystem.right:
-        #         if self.grounded and self.holding_crate:
-        #             other_collider.entity.rigid_body.velocity.x = 4*self.h_speed/5.0 * direction
 
     def test_if_grounded(self):
 
@@ -255,7 +240,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
                 # check if the player collided with a wall, box, or platform
                 tag = other.tag
-                if tag == "wall" or tag == "platform" or tag == "box" or tag == "floor":
+                if tag == "wall" or tag == "platform" or tag == "box" or tag == "floor" or tag == "cabin":
 
                     player = self.entity
 
@@ -282,7 +267,6 @@ class PlayerPlatformMovement(BehaviorScript):
                     other.collider.box = temp_other_box
 
     def check_if_near_crate(self):
-
 
         result = (False, None)
 
