@@ -11,6 +11,32 @@ engine = Engine(1200, 700)
 # load music to play in the background
 mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
 
+monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
+
+
+class MonsterMovement(BehaviorScript):
+
+    def __init__(self):
+        super(MonsterMovement, self).__init__("monster movement")
+        self.speed = 260
+        self.velocity = Vector2(0, 0)
+
+    def update(self):
+
+        player = self.entity.world.player
+
+        direction = player.transform.position - self.entity.transform.position
+        direction.normalize()
+
+        self.velocity = direction * self.speed
+
+        dt = self.entity.world.engine.delta_time
+
+        self.entity.transform.position += self.velocity * dt
+
+        # make the lamp follow the monster
+        self.entity.world.monster_light.transform.position = self.entity.transform.position
+
 
 class UpdateAnimationHandler(WorldScript):
 
@@ -60,6 +86,80 @@ class DeactivateSaw(BehaviorScript):
             saw.remove_component(Animator.tag)
 
 
+# This will handle the dimming of lamp light and regeneration of lamp light from the other lamps
+class HandleLightLife(BehaviorScript):
+
+    def __init__(self):
+        super(HandleLightLife, self).__init__("handle light life")
+
+        self.max_lamp_life = 120.0
+        self.max_time_monster = 8.0
+
+        # lamp light life in seconds
+        self.lamp_life = self.max_lamp_life
+
+        # 10 secs are given so player can refuel lamp
+        self.monster_appearance_timer = self.max_time_monster
+
+        self.monster_spawned = False
+
+    def update(self):
+
+        # reduce lamp strength at every mutliple of 5
+        if self.lamp_life > 0 and int(self.lamp_life) % 5 == 0:
+            scale = self.lamp_life / self.max_lamp_life
+            self.entity.world.lamp_source.transform.scale_by(scale, scale)
+
+        # spawn monster
+        if self.monster_appearance_timer < 0 and not self.monster_spawned:
+            monster_appearance_sfx.play()
+            self.entity.world.initialize_monster()
+            self.monster_spawned = True
+
+        # start secondary timer for monster to appear
+        if self.lamp_life < 0 < self.monster_appearance_timer:
+            self.monster_appearance_timer -= self.entity.world.engine.delta_time
+
+        # reduce lamp life
+        if self.lamp_life > 0:
+            self.lamp_life -= self.entity.world.engine.delta_time
+
+    def take_input(self, event):
+
+        # if the player wants to take a light
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_q:
+
+                # make sure we are colliding with a light source
+                for lamp_light in self.entity.world.lamp_lights:
+
+                    # player is in range of a lamp light
+                    if PhysicsSystem.box2box_collision(self.entity.collider, lamp_light.collider):
+
+                        # reset lamp life and monster appearance timer
+                        self.lamp_life = self.max_lamp_life
+                        self.monster_appearance_timer = self.max_time_monster
+
+                        # disable monster
+                        if self.monster_spawned:
+                            self.entity.world.disable_monster()
+
+                        # set lamp source back to max capacity
+                        self.entity.world.lamp_source.transform.scale_by(1, 1)
+
+                        # destroy the lamp light that you obtained fuel from
+                        self.entity.world.destroy_entity(lamp_light)
+
+                        # remove from lamp lights list
+                        self.entity.world.lamp_lights.remove(lamp_light)
+
+                        # remove it from the renderer
+                        self.entity.world.get_system(RenderSystem.tag).light_sources.remove(lamp_light)
+
+                        self.monster_spawned = False
+                        return
+
+
 class PlatformWorld(World):
 
     def __init__(self):
@@ -71,6 +171,11 @@ class PlatformWorld(World):
         self.ladders = list()
         self.lamp_source = None
         self.crates = list()
+
+        self.monster = None
+        self.monster_light = None
+
+        self.lamp_lights = list()
 
     def load_scene(self):
 
@@ -99,6 +204,11 @@ class PlatformWorld(World):
         self.load_book_shelves()
         self.load_saw()
 
+        # set up the foundation for the monster
+        self.monster = self.create_entity()
+        self.monster.add_component(Transform())
+        self.monster.tag = "monster"
+
         # set up camera
         render = self.get_system(RenderSystem.tag)
         render.camera = self.create_entity()
@@ -113,9 +223,19 @@ class PlatformWorld(World):
 
         self.add_script(UpdateAnimationHandler(self.player_anim_handler))
 
+        # get all the lamp lights
+        for e in self.entity_manager.entities:
+            if e.tag == "lamp light":
+                self.lamp_lights.append(e)
+
     def load_lights(self):
 
         render_sys = self.get_system(RenderSystem.tag)
+
+        # a light source to see the monster
+        lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_xsmall_mask.png").convert_alpha()
+        self.monster_light = self.create_renderable_object(lamp_light_img)
+        self.monster_light.renderer.depth = 10000
 
         large_lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_mask.png").convert_alpha()
         self.lamp_source = self.create_renderable_object(large_lamp_light_img)
@@ -132,7 +252,6 @@ class PlatformWorld(World):
         lamp_light = self.create_renderable_object(lamp_light_img)
         lamp_light.transform.position = Vector2(185, 80)
         set_lamp_light_attributes(lamp_light, render_sys)
-
 
         # LAMP AT PLATFORM B
         lamp = self.create_renderable_object(lamp_img)
@@ -399,18 +518,22 @@ class PlatformWorld(World):
         ceil_color = (50, 50, 50)
 
         w = self.engine.display.get_width()
+        floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert_alpha()
 
-        img = RenderSystem.create_solid_image(w*2, 200, ceil_color)
+        img = create_img_from_tile(floor_tile, w*2, 200)
+        img = pygame.transform.flip(img, False, True)
         ceil_a = self.create_game_object(img)
         ceil_a.transform.position = Vector2(w, -470)
         set_ceiling_attributes(ceil_a)
 
-        img = RenderSystem.create_solid_image(1200, 400, ceil_color)
+        img = create_img_from_tile(floor_tile, 1200, 400)
+        img = pygame.transform.flip(img, False, True)
         ceil_b = self.create_game_object(img)
         ceil_b.transform.position = Vector2(w*2 + 500, -350)
         set_ceiling_attributes(ceil_b)
 
-        img = RenderSystem.create_solid_image(1150, 200, ceil_color)
+        img = create_img_from_tile(floor_tile, 1150, 200)
+        img = pygame.transform.flip(img, False, True)
         ceil_c = self.create_game_object(img)
         ceil_c.transform.position = Vector2(w*2 + 1650, -470)
         set_ceiling_attributes(ceil_c)
@@ -436,10 +559,11 @@ class PlatformWorld(World):
 
         self.player.add_script(PlayerClimbing("player climb"))
         self.player.add_script(PlayerPlatformMovement("player plat move"))
+        self.player.add_script(DeactivateSaw())
+        self.player.add_script(HandleLightLife())
 
         # add animator to player from the animation state machine
         self.player.add_component(self.player_anim_handler.animator)
-        self.player.add_script(DeactivateSaw())
 
     def load_elevators(self):
 
@@ -615,6 +739,38 @@ class PlatformWorld(World):
         ladder.tag = "ladder"
 
         self.ladders.append(ladder)
+
+    def initialize_monster(self):
+
+        render_sys = self.get_system(RenderSystem.tag)
+
+        img = pygame.image.load("assets/images/environment/hazards/monster.png").convert_alpha()
+        w = img.get_width()
+        h = img.get_height()
+        pivot = Vector2(w/2, h/2)
+
+        self.monster.add_component(Renderer(img, pivot))
+        self.monster.add_component(BoxCollider(w, h))
+        self.monster.add_script(MonsterMovement())
+        self.monster.collider.is_trigger = True
+        self.monster.renderer.depth = -10
+
+        # insert to scene
+        render_sys.dynamic_insertion_to_scene(self.monster)
+        render_sys.light_sources.append(self.monster_light)
+
+    # Make the monster invisible and unable to interact with
+    def disable_monster(self):
+        # remove from the render system
+        #render_sys = self.get_system(RenderSystem.tag)
+        self.get_system(RenderSystem.tag).remove_from_scene(self.monster)
+        self.get_system(RenderSystem.tag).remove_from_scene(self.monster_light)
+        self.get_system(RenderSystem.tag).light_sources.remove(self.monster_light)
+
+        self.monster.remove_component(Renderer.tag)
+        self.monster.remove_component(BoxCollider.tag)
+        self.monster.remove_script("monster movement")
+
 
 
 engine.set_world(PlatformWorld())
