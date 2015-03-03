@@ -331,6 +331,95 @@ class Maze(World):
         c1 = find_coordinate(c)
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
 
+    def end_path(self):
+        vertical_beam = pygame.image.load("assets/images/tiles/vertical_beam.png").convert_alpha()
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 8))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 9))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 11))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 12))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 13))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 14))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((8, 8))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((8, 9))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((3, 9))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((3, 8))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        horizontal_beam = pygame.image.load("assets/images/tiles/horizontal_beam.png").convert_alpha()
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((0, 7))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((1, 7))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((2, 7))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((4, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((5, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((6, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((7, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        # bottom_right_curve = pygame.image.load("assets/images/tiles/curve_bottom_right.png").convert_alpha()
+        #
+        # new_wall = self.create_renderable_object(bottom_right_curve)
+        # c = find_coordinate((8, 10))
+        # new_wall.transform.position = Vector2(c[0], c[1])
+        #
+        # bottom_left_curve = pygame.image.load("assets/images/tiles/curve_bottom_left.png").convert_alpha()
+        #
+        # new_wall = self.create_renderable_object(bottom_left_curve)
+        # c = find_coordinate((3, 10))
+        # new_wall.transform.position = Vector2(c[0], c[1])
+
     def load_scene(self):
 
         img_width = lamp_light_img.get_width()
@@ -772,6 +861,7 @@ class PlayerBehavior (BehaviorScript):
         self.touched_lever4 = False
         self.touched_lever5 = False
         self.touched_lever6 = False
+        self.touched_lever7 = None
 
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
@@ -793,7 +883,7 @@ class PlayerBehavior (BehaviorScript):
             self.touched_lever4 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever5_off":
-            # print "You hit lever 5!"
+            print "You hit lever 5!"
             self.touched_lever5 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever6_off":
@@ -802,7 +892,8 @@ class PlayerBehavior (BehaviorScript):
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever7_off":
             # print "You hit lever 7!"
-            self.touched_lever6 = True
+            self.entity.world.end_path()
+            self.touched_lever7 = True
             self.entity.world.destroy_entity(other_entity)
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
