@@ -37,7 +37,7 @@ class TeleportCrate(BehaviorScript):
             self.entity.transform.position = Vector2(500, -300)
 
         elif other_collider.entity.name == "teleport b":
-            self.entity.transform.position = Vector2(1550, -300)
+            self.entity.transform.position = Vector2(1800, -300)
 
 
 class PlatformWorld(World):
@@ -396,7 +396,6 @@ class PlatformWorld(World):
         box.transform.position = Vector2(2475, 300)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
-
 
     def load_anims(self):
 
