@@ -34,7 +34,7 @@ class TeleportCrate(BehaviorScript):
     def collision_event(self, other_collider):
 
         if other_collider.entity.name == "teleport a":
-            self.entity.transform.position = Vector2(500, -300)
+            self.entity.transform.position = Vector2(540, -300)
 
         elif other_collider.entity.name == "teleport b":
             self.entity.transform.position = Vector2(1800, -300)
@@ -77,6 +77,7 @@ class PlatformWorld(World):
         self.load_boxes()
         self.load_lights()
         self.load_book_shelves()
+        self.load_saw()
 
         # set up camera
         render = self.get_system(RenderSystem.tag)
@@ -101,8 +102,61 @@ class PlatformWorld(World):
         self.lamp_source.renderer.depth = 10000
         render_sys.light_sources.append(self.lamp_source)
 
+    def load_saw(self):
+
+        img = pygame.image.load("assets/images/environment/hazards/saw.png").convert_alpha()
+        saw = self.create_game_object(img)
+        saw.transform.scale_by(0.75, 0.75)
+        saw.renderer.depth = 70
+        saw.transform.position = Vector2(3200, 480)
+
+        #w = 500
+        #h = 500
+        #saw.collider.set_box(w, h)
+
+        animator = Animator()
+        saw.add_component(animator)
+
+        anim = Animator.Animation()
+        anim.frame_latency = 0.01
+
+        for degree in range(0, 360, 360/15):
+
+            #obtain original dimensions
+            #original_rect = img.get_rect()
+            original_rect = saw.renderer.sprite.get_rect()
+            rotated_surface = pygame.transform.rotate(saw.renderer.sprite, degree)
+
+            #adjust new surface's center with the original's
+            rotate_rect = original_rect.copy()
+            rotate_rect.center = rotated_surface.get_rect().center
+
+            rotated_surface = rotated_surface.subsurface(rotate_rect).copy()
+
+            anim.add_frame(rotated_surface)
+
+        animator.set_animation(anim)
+
     def load_book_shelves(self):
-        pass
+
+        img = pygame.image.load("assets/images/environment/bookcase.png").convert()
+        w = img.get_width()
+        h = img.get_height()
+        pivot = Vector2(w/2, h/2)
+
+        book = self.create_box_collider_object(w, h)
+        book.add_component(Renderer(img, pivot))
+        book.transform.position = Vector2(400, 500)
+
+        book.collider.is_trigger = True
+        book.renderer.depth = 70
+
+        book = self.create_box_collider_object(w, h)
+        book.add_component(Renderer(img, pivot))
+        book.transform.position = Vector2(4350, 0)
+
+        book.collider.is_trigger = True
+        book.renderer.depth = 70
 
     def load_backgrounds(self):
 
@@ -174,11 +228,11 @@ class PlatformWorld(World):
         img_300x50 = load(path + "50x300.png").convert_alpha()
 
         plat_a = self.create_game_object(img_200x30)
-        plat_a.transform.position = Vector2(300, 250)
+        plat_a.transform.position = Vector2(300, 250+50)
         set_platform_attributes(plat_a)
 
         plat_b = self.create_game_object(img_400x30)
-        plat_b.transform.position = Vector2(450, 400)
+        plat_b.transform.position = Vector2(450, 400+50)
         set_platform_attributes(plat_b)
 
         shift = 200
@@ -379,7 +433,7 @@ class PlatformWorld(World):
 
         box_img = pygame.image.load("assets/images/crates/gold_blue.png").convert_alpha()
         box = self.create_game_object(box_img)
-        box.transform.position = Vector2(500, 300)
+        box.transform.position = Vector2(540, 300)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
         self.crates.append(box)
