@@ -882,7 +882,7 @@ class PlayerBehavior (BehaviorScript):
             self.touched_lever4 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever5_off":
-            print "You hit lever 5!"
+            # print "You hit lever 5!"
             self.touched_lever5 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever6_off":
