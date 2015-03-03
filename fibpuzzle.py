@@ -70,10 +70,10 @@ class CheckBoxes(WorldScript):
             return True
 
 
-class PlayerMovement(BehaviorScript):
+class PlayerFibMovement(BehaviorScript):
 
     def __init__(self):
-        super(PlayerMovement, self).__init__("player move")
+        super(PlayerFibMovement, self).__init__("player move")
         self.h_speed = 200
         self.v_speed = 300
         self.right = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
@@ -222,10 +222,10 @@ class PlayerMovement(BehaviorScript):
         return result
 
 
-class PlatformWorld(World):
+class FibWorld(World):
 
     def __init__(self):
-        super(PlatformWorld, self).__init__()
+        super(FibWorld, self).__init__()
 
         self.player = None
         self.box = None
@@ -241,6 +241,9 @@ class PlatformWorld(World):
 
         # used to signal that the puzzle has been already done
         self.puzzle_finished = False
+
+    def resume(self):
+        mixer.music.load("assets/music/game_select_bak.ogg")
 
     def load_scene(self):
 
@@ -268,7 +271,7 @@ class PlatformWorld(World):
         self.player.transform.position = Vector2(100, 100)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
-        self.player.add_script(PlayerMovement())
+        self.player.add_script(PlayerFibMovement())
         self.player.collider.restitution = 1
         self.player.collider.box.w -= 60
         self.player.collider.box.h -= 60
@@ -330,10 +333,14 @@ class PlatformWorld(World):
         self.leftWall.transform.position = Vector2(0-50-50, half_h)
         self.rightWall.transform.position = Vector2(half_w*2+50+50, half_h)
 
-        PhysicsSystem.gravity.zero()
+        self.get_system(PhysicsSystem.tag).gravity.zero()
         self.add_script(CheckBoxes())
 
         self.walls = [self.topWall, self.leftWall, self.rightWall, self.bottomWall]
 
-engine.set_world(PlatformWorld())
-engine.run()
+        # start the background music and set it to loop forever
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
+
+# engine.set_world(FibWorld())
+# engine.run()
