@@ -21,6 +21,8 @@ class MonsterMovement(BehaviorScript):
         self.speed = 260
         self.velocity = Vector2(0, 0)
 
+        self.killed_player = False
+
     def update(self):
 
         player = self.entity.world.player
@@ -36,6 +38,35 @@ class MonsterMovement(BehaviorScript):
 
         # make the lamp follow the monster
         self.entity.world.monster_light.transform.position = self.entity.transform.position
+
+    def take_input(self, event):
+
+        # restart the game if the player died
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                if self.killed_player:
+                    pass
+
+
+    def collision_event(self, other_collider):
+
+        # hit the player - player dies
+        if other_collider.entity.name == "player":
+
+            player = self.entity.world.player
+
+            if not self.killed_player:
+                # disable all player functionality
+                player.disabled = True
+
+                # display a red cross over the player to signify that he is dead
+                img = pygame.image.load("assets/images/effects/blood_splatter.png").convert_alpha()
+                cross = self.entity.world.create_renderable_object(img)
+                cross.renderer.is_static = True
+                cross.renderer.depth = -100
+                cross.transform.position.x = self.entity.transform.position.x
+                cross.transform.position.y = self.entity.transform.position.y
+                self.killed_player = True
 
 
 class UpdateAnimationHandler(WorldScript):
@@ -92,8 +123,8 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 120.0
-        self.max_time_monster = 8.0
+        self.max_lamp_life = 10.0
+        self.max_time_monster = 2.0
 
         # lamp light life in seconds
         self.lamp_life = self.max_lamp_life
