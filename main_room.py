@@ -18,8 +18,6 @@ class BookShelfInteraction(BehaviorScript):
 
         self.showing_hint = False
 
-        self.hints = list()
-
     def update(self):
         pass
 
@@ -43,7 +41,11 @@ class BookShelfInteraction(BehaviorScript):
                         if mouse_rect.colliderect(book_shelf.collider.box):
                             self.showing_hint = True
 
+                            self.entity.world.engine.gui.add_widget(self.entity.world.text)
 
+            elif self.showing_hint:
+                self.entity.world.engine.gui.remove_widget(self.entity.world.text)
+                self.showing_hint = False
 
 
 class ExitMainRoom(WorldScript):
@@ -310,6 +312,8 @@ class PlatformWorld(World):
 
         self.book_shelves = list()
 
+        self.text = None
+
     def resume(self):
         # load music to play in the background
         mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
@@ -317,6 +321,10 @@ class PlatformWorld(World):
         mixer.music.set_volume(0.3)
 
     def load_scene(self):
+
+        img = pygame.Surface((200, 200)).convert()
+        img.fill((255, 0, 0))
+        self.text = self.engine.gui.Widget(img, Vector2(0, 0))
 
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
