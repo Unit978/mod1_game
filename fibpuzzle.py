@@ -7,6 +7,9 @@ from copy import copy
 
 engine = Engine(1200, 700)
 
+# sound effect to play once the puzzle is completed
+puzzle_finished_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
+
 
 class CheckBoxes(WorldScript):
 
@@ -26,25 +29,45 @@ class CheckBoxes(WorldScript):
             self.boxCoordinates["pbox6"] = [Vector2(692, 350), False]
 
         def update(self):
+            # if the boxes are not in their final form
+            if not self.all_in_place():
 
-            # loop to iterate through all the boxes as well as the list of boxes
-            for box in self.world.boxes:
-                if not self.boxCoordinates[box.tag][1]:
-                    tgt_position = self.boxCoordinates[box.tag][0]
+                # loop to iterate through all the boxes as well as the list of boxes
+                for box in self.world.boxes:
+                    if not self.boxCoordinates[box.tag][1]:
+                        tgt_position = self.boxCoordinates[box.tag][0]
 
-                    tgt_distance = box.transform.position - tgt_position
+                        tgt_distance = box.transform.position - tgt_position
 
-                    #  if the player lets go close to the target position
-                    if tgt_distance.sq_magnitude() < 400 and (self.world.player.get_script("player move").selected_crate is not box):
+                        #  if the player lets go close to the target position
+                        if tgt_distance.sq_magnitude() < 400 and (self.world.player.get_script("player move").selected_crate is not box):
 
-                        # snap the box
-                        box.transform.position.x = tgt_position.x
-                        box.transform.position.y = tgt_position.y
-                        self.boxCoordinates[box.tag][1] = True
+                            # snap the box
+                            box.transform.position.x = tgt_position.x
+                            box.transform.position.y = tgt_position.y
+                            self.boxCoordinates[box.tag][1] = True
 
-                    # position of where boxes are supposed to go
-                    # used for testing purposes
-                    # pygame.draw.circle(self.world.engine.display, (255, 255, 255), (int(tgt_position.x), int(tgt_position.y)), 2)
+                        # position of where boxes are supposed to go
+                        # used for testing purposes
+                        # pygame.draw.circle(self.world.engine.display, (255, 255, 255), (int(tgt_position.x), int(tgt_position.y)), 2)
+
+        def all_in_place(self):
+
+            # already completed no need to iterate through the boxes to check
+            if self.world.puzzle_finished:
+                return True
+
+            for key in self.boxCoordinates:
+
+                # if one is not in place then the test fails
+                if not self.boxCoordinates[key][1]:
+                    return False
+
+            # puzzle has been finished - play a sound to notify the player
+            self.world.puzzle_finished = True
+            puzzle_finished_sfx.play()
+
+            return True
 
 
 class PlayerMovement(BehaviorScript):
@@ -111,23 +134,25 @@ class PlayerMovement(BehaviorScript):
 
     def take_input(self, event):
 
-        # player decides to move crate. He must not be holding anything
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and self.selected_crate is None:
+        # if the boxes are not in the final formation then be able to move them around
+        if not self.entity.world.puzzle_finished:
 
-                result = self.check_if_near_create()
-                # if the player is near a crate
-                if result[0]:
-                    crate = result[1]
-                    self.selected_crate = crate
+            # player decides to move crate. He must not be holding anything
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and self.selected_crate is None:
 
-                    # the crate becomes un-snapped
-                    self.entity.world.get_script("check boxes").boxCoordinates[crate.tag][1] = False
+                    result = self.check_if_near_create()
+                    # if the player is near a crate
+                    if result[0]:
+                        crate = result[1]
+                        self.selected_crate = crate
 
+                        # the crate becomes un-snapped
+                        self.entity.world.get_script("check boxes").boxCoordinates[crate.tag][1] = False
 
-            # player decides to stop moving crate
-            elif event.key == pygame.K_SPACE and self.selected_crate is not None:
-                self.selected_crate = None
+                # player decides to stop moving crate
+                elif event.key == pygame.K_SPACE and self.selected_crate is not None:
+                    self.selected_crate = None
 
     def move_crate(self):
         v = self.entity.rigid_body.velocity
@@ -213,6 +238,9 @@ class PlatformWorld(World):
         self.bottomWall = None
 
         self.walls = None
+
+        # used to signal that the puzzle has been already done
+        self.puzzle_finished = False
 
     def load_scene(self):
 
