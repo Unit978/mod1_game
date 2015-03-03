@@ -129,7 +129,7 @@ class PlayerMovement(BehaviorScript):
             self.move_crate()
 
         # player left crate bounds
-        if not self.check_if_near_create()[0]:
+        if not self.check_if_near_crate()[0]:
             self.selected_crate = None
 
     def take_input(self, event):
@@ -141,7 +141,7 @@ class PlayerMovement(BehaviorScript):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and self.selected_crate is None:
 
-                    result = self.check_if_near_create()
+                    result = self.check_if_near_crate()
                     # if the player is near a crate
                     if result[0]:
                         crate = result[1]
@@ -193,7 +193,7 @@ class PlayerMovement(BehaviorScript):
         self.selected_crate.transform.position.x += v.x * dt * move_x
         self.selected_crate.transform.position.y += v.y * dt * move_y
 
-    def check_if_near_create(self):
+    def check_if_near_crate(self):
 
         result = (False, None)
 
