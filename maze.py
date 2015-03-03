@@ -122,6 +122,8 @@ class PlayerMovement(BehaviorScript):
             # take the player back to the main room
             self.entity.world.engine.game.go_to_main()
 
+            self.entity.world.puzzle = True
+
 
 class Maze(World):
     def __init__(self):
