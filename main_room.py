@@ -33,11 +33,31 @@ class TeleportCrate(BehaviorScript):
     # if the crate collides with a teleporter, spawn them from the ceilings at certain points
     def collision_event(self, other_collider):
 
-        if other_collider.entity.name == "teleport a":
+        if other_collider.entity.name == "teleport b":
             self.entity.transform.position = Vector2(540, -300)
 
-        elif other_collider.entity.name == "teleport b":
+        elif other_collider.entity.name == "teleport a":
             self.entity.transform.position = Vector2(1800, -300)
+
+
+class DeactivateSaw(BehaviorScript):
+
+    def __init__(self):
+        super(DeactivateSaw, self).__init__("deactivate saw")
+
+    def collision_event(self, other_collider):
+
+        if other_collider.entity.tag == "saw switch":
+
+            new_switch_image = pygame.image.load("assets/images/tiles/56x100_switchON.png").convert()
+
+            other_collider.entity.renderer.set_image(new_switch_image)
+
+            # get the saw
+            saw = self.entity.world.get_entity_by_tag("saw")
+
+            saw.collider.is_trigger = True
+            saw.remove_component(Animator.tag)
 
 
 class PlatformWorld(World):
@@ -109,10 +129,7 @@ class PlatformWorld(World):
         saw.transform.scale_by(0.75, 0.75)
         saw.renderer.depth = 70
         saw.transform.position = Vector2(3200, 480)
-
-        #w = 500
-        #h = 500
-        #saw.collider.set_box(w, h)
+        saw.tag = "saw"
 
         animator = Animator()
         saw.add_component(animator)
@@ -120,6 +137,7 @@ class PlatformWorld(World):
         anim = Animator.Animation()
         anim.frame_latency = 0.01
 
+        # create multiple rotating frames for the saw
         for degree in range(0, 360, 360/15):
 
             #obtain original dimensions
@@ -136,6 +154,15 @@ class PlatformWorld(World):
             anim.add_frame(rotated_surface)
 
         animator.set_animation(anim)
+
+        img = pygame.image.load("assets/images/tiles/56x100_switchOFF.png").convert()
+
+        # add the switch to deactivate lever
+        switch = self.create_game_object(img)
+        switch.collider.is_trigger = True
+        switch.transform.position = Vector2(2050, -120)
+        switch.renderer.depth = 70
+        switch.tag = "saw switch"
 
     def load_book_shelves(self):
 
@@ -368,6 +395,7 @@ class PlatformWorld(World):
 
         # add animator to player from the animation state machine
         self.player.add_component(self.player_anim_handler.animator)
+        self.player.add_script(DeactivateSaw())
 
     def load_elevators(self):
 
@@ -426,14 +454,14 @@ class PlatformWorld(World):
     def load_boxes(self):
         box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
         box = self.create_game_object(box_img)
-        box.transform.position = Vector2(900, 300)
+        box.transform.position = Vector2(900, 560)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
         self.crates.append(box)
 
         box_img = pygame.image.load("assets/images/crates/gold_blue.png").convert_alpha()
         box = self.create_game_object(box_img)
-        box.transform.position = Vector2(540, 300)
+        box.transform.position = Vector2(540, 400)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
         self.crates.append(box)
