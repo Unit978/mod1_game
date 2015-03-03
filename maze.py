@@ -342,6 +342,7 @@ class Maze(World):
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
 
     def end_path(self):
+        self.destroy_entity(self.blocked7)
         vertical_beam = pygame.image.load("assets/images/tiles/vertical_beam.png").convert_alpha()
 
         new_wall = self.create_renderable_object(vertical_beam)
@@ -892,7 +893,6 @@ class PlayerBehavior (BehaviorScript):
             # print "You hit lever 7!"
             self.entity.world.end_path()
             self.touched_lever7 = True
-            self.entity.world.destroy_entity(other_entity)
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
             self.entity.world.destroy_entity(other_entity)
