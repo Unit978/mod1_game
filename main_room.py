@@ -22,7 +22,7 @@ class UpdateAnimationHandler(WorldScript):
         self.anim_state_machine.update()
 
         # make the lamp mask follow the player
-        self.world.lamp_mask.transform.position = self.world.player.transform.position
+        self.world.lamp_source.transform.position = self.world.player.transform.position
 
 
 class PlatformWorld(World):
@@ -35,10 +35,13 @@ class PlatformWorld(World):
 
         self.ladders = list()
 
-        self.lamp_mask = None
-        self.light_source = None
+        # self.lamp_mask = None
+        # self.light_source = None
+
+        self.lamp_source = None
 
     def load_scene(self):
+
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
         self.origin = Vector2(0, -450)
@@ -47,21 +50,36 @@ class PlatformWorld(World):
         self.width = 4600
         self.height = 1100
 
-        background_image = pygame.Surface((w, h))
-        background_image.convert()
-        background_image.fill((0, 0, 0))
+        # setup the render system for a dark environment
+        self.get_system(RenderSystem.tag).simulate_dark_env = True
+        self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h)).convert()
 
-        # add necessary components to be able to position and render the background
-        background = self.create_renderable_object(background_image)
-        background.renderer.pivot = Vector2(0, 0)
-        background.renderer.depth = 100
-        background.renderer.is_static = True
+        # background_image = pygame.Surface((w, h))
+        # background_image.convert()
+        # background_image.fill((0, 0, 0))
+        #
+        # # add necessary components to be able to position and render the background
+        # background = self.create_renderable_object(background_image)
+        # background.renderer.pivot = Vector2(0, 0)
+        # background.renderer.depth = 100
+        # background.renderer.is_static = True
 
-        lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
-        self.lamp_mask = self.create_renderable_object(lamp_light_img)
-        self.lamp_mask.renderer.depth = -100
-        self.lamp_mask.renderer.pivot.x -= 20
-        self.lamp_mask.renderer.pivot.y -= 20
+        # lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
+        # self.lamp_mask = self.create_renderable_object(lamp_light_img)
+        # self.lamp_mask.renderer.depth = -100
+        # self.lamp_mask.renderer.pivot.x -= 20
+        # self.lamp_mask.renderer.pivot.y -= 20
+
+        # lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_small.png").convert_alpha()
+        # l = self.create_renderable_object(lamp_light_img)
+        # l.renderer.depth = -90
+        # l.transform.position = Vector2(600, 300)
+
+        img = pygame.image.load("assets/images/circle_mask.png").convert_alpha()
+        self.lamp_source = self.create_renderable_object(img)
+        self.lamp_source.renderer.depth = 10000
+
+        self.get_system(RenderSystem.tag).light_sources.append(self.lamp_source)
 
         self.load_backgrounds()
         self.load_player()
