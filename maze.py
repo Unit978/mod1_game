@@ -116,8 +116,11 @@ class PlayerMovement(BehaviorScript):
         # if the player hit the exit trigger to get out of the maze
         if other_collider.entity == self.entity.world.exit_object_trigger:
 
+            # player falls into the maze if he comes back
+            self.entity.transform.position.zero()
+
             # take the player back to the main room
-            print("taking you back to main room")
+            self.entity.world.engine.game.go_to_main()
 
 
 class Maze(World):
@@ -166,6 +169,8 @@ class Maze(World):
 
     def resume(self):
         mixer.music.load("assets/music/VoiceInMyHead.ogg")
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
     def construct_blocked_walls(self):
         l1c = (12, 4)

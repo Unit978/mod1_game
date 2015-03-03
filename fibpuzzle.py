@@ -221,6 +221,15 @@ class PlayerFibMovement(BehaviorScript):
 
         return result
 
+    def collision_event(self, other_collider):
+        if other_collider.entity.name == "trigger object exit":
+
+            # save the original spawn point to this world
+            self.entity.transform.position = Vector2(100, 100)
+            self.entity.rigid_body.velocity.zero()
+
+            self.entity.world.engine.game.go_to_main()
+
 
 class FibWorld(World):
 
@@ -242,10 +251,19 @@ class FibWorld(World):
         # used to signal that the puzzle has been already done
         self.puzzle_finished = False
 
+        self.trigger_object_exit = None
+
     def resume(self):
         mixer.music.load("assets/music/game_select_bak.ogg")
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
     def load_scene(self):
+
+        self.trigger_object_exit = self.create_box_collider_object(200, 60)
+        self.trigger_object_exit.collider.is_trigger = True
+        self.trigger_object_exit.transform.position = Vector2(-90, 100)
+        self.trigger_object_exit.name = "trigger object exit"
 
         background_image = pygame.image.load("assets/images/floors/Floor.png").convert()
         lamps_image  = pygame.image.load("assets/images/floors/Lamps.png").convert_alpha()

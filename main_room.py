@@ -119,8 +119,8 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 10.0
-        self.max_time_monster = 2.0
+        self.max_lamp_life = 120.0
+        self.max_time_monster = 8.0
 
         # lamp light life in seconds
         self.lamp_life = self.max_lamp_life
@@ -187,6 +187,30 @@ class HandleLightLife(BehaviorScript):
                         return
 
 
+class GoToOtherLevel(BehaviorScript):
+
+    def __init__(self):
+        super(GoToOtherLevel, self).__init__("go to other level")
+
+    def collision_event(self, other_collider):
+
+        if other_collider.entity.name == "trigger to maze":
+
+            # player will be falling down once he comes back from the maze
+            self.entity.rigid_body.velocity.zero()
+            self.entity.transform.position = Vector2(1100, -320)
+
+            self.entity.world.engine.game.go_to_maze()
+
+        elif other_collider.entity.name == "trigger to fib":
+
+            # shift back the player a bit
+            self.entity.transform.position.x -= (self.entity.collider.box.w/2 + 10)
+            self.entity.rigid_body.velocity.zero()
+
+            self.entity.world.engine.game.go_to_fib()
+
+
 class PlatformWorld(World):
 
     def __init__(self):
@@ -207,6 +231,8 @@ class PlatformWorld(World):
     def resume(self):
         # load music to play in the background
         mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
     def load_scene(self):
 
@@ -221,6 +247,17 @@ class PlatformWorld(World):
         # setup the render system for a dark environment
         self.get_system(RenderSystem.tag).simulate_dark_env = True
         self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h)).convert()
+
+        # triggers to the other worlds
+        trigger_to_maze = self.create_box_collider_object(200, 200)
+        trigger_to_maze.collider.is_trigger = True
+        trigger_to_maze.transform.position = Vector2(-90, 70)
+        trigger_to_maze.name = "trigger to maze"
+
+        trigger_to_fib = self.create_box_collider_object(200, 200)
+        trigger_to_fib.collider.is_trigger = True
+        trigger_to_fib.transform.position = Vector2(4700, 370)
+        trigger_to_fib.name = "trigger to fib"
 
         self.load_backgrounds()
         self.load_player()
@@ -579,6 +616,8 @@ class PlatformWorld(World):
         self.player = self.create_game_object(starting_image)
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(230, 580)
+        #self.player.transform.position = Vector2(4330, 580)
+        self.player.transform.position = Vector2(100, 80)
         self.player.transform.scale = Vector2(1, 1)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 2
@@ -592,6 +631,7 @@ class PlatformWorld(World):
         self.player.add_script(PlayerPlatformMovement("player plat move"))
         self.player.add_script(DeactivateSaw())
         self.player.add_script(HandleLightLife())
+        self.player.add_script(GoToOtherLevel())
 
         # add animator to player from the animation state machine
         self.player.add_component(self.player_anim_handler.animator)

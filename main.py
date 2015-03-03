@@ -26,8 +26,13 @@ class Game(object):
 
         self.engine.game = self
 
-        # show main menu
+        screen = pygame.display.set_mode((1200, 700), pygame.HWSURFACE, 32)
+        title_screen = pygame.image.load("assets/images/gui/title_screen.png").convert()
 
+        x = 1200/2 - title_screen.get_width()/2
+        y = 700/2 - title_screen.get_height()/2
+
+        # show title screen
         exit_title_screen = False
         while not exit_title_screen:
 
@@ -36,8 +41,13 @@ class Game(object):
                     Engine.clean_up()
 
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_p:
+                    if event.key == pygame.K_RETURN:
                         exit_title_screen = True
+
+            screen.fill((0, 0, 0))
+            screen.blit(title_screen, (x, y))
+
+            pygame.display.update()
 
         self.main_room = PlatformWorld()
         self.maze_room = Maze()
@@ -60,5 +70,5 @@ class Game(object):
         self.engine.set_world(self.main_room)
 
 
-luminesence = Game()
-luminesence.start()
+luminescence = Game()
+luminescence.start()
