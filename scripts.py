@@ -283,10 +283,31 @@ class PlayerPlatformMovement(BehaviorScript):
 
     def check_if_near_crate(self):
 
+
         result = (False, None)
 
         # check if the player is near a box
         for crate in self.entity.world.crates:
+
+            # this code stops crates from being pushed inside of colliders such as walls
+            for entity in self.entity.world.entity_manager.entities:
+
+                # collider exists and is not a trigger
+                valid_collider = entity.collider is not None and not entity.collider.is_trigger
+
+                # dont consider the player or yourself during this collision test
+                if valid_collider and entity is not self.entity and entity is not crate:
+
+                    # collision occurs
+                    if PhysicsSystem.box2box_collision(crate.collider, entity.collider):
+
+                        # check of the collision occurred from the sides
+                        side = PhysicsSystem.calc_box_hit_orientation(crate.collider, entity.collider)
+                        if side == PhysicsSystem.left or side == PhysicsSystem.right:
+
+                            # stop the crate from moving
+                            return False, None
+
             player = self.entity
 
             temp_player_box = copy(player.collider.box)
@@ -322,6 +343,8 @@ class PlayerPlatformMovement(BehaviorScript):
                     if side == PhysicsSystem.right and player.rigid_body.velocity.x > 0:
                         crate.transform.position.x += shift-20
 
+                    elif side == PhysicsSystem.left and player.rigid_body.velocity.x < 0:
+                        crate.transform.position.x -= shift-20
 
             # reset the collider boxes to the original ones
             player.collider.box = temp_player_box
