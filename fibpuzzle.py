@@ -1,31 +1,29 @@
 
 from world import *
 from engine import *
-from random import randrange
 from components import BehaviorScript
 from components import WorldScript
+from copy import copy
 
 engine = Engine(1200, 700)
 
-#lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_1200x700.png").convert_alpha()
 
 class CheckBoxes(WorldScript):
 
-        def __init__(self, script_name):
-            super(CheckBoxes, self).__init__(script_name)
+        def __init__(self):
+            super(CheckBoxes, self).__init__("check boxes")
                 
             #list of coordinates of where boxes are supposed to be
             self.boxCoordinates = dict()
             #450, 275 500, 275 475, 200 350, 225
             # the correct position of boxes with a boolean condition
             # to check if a box has been snapped into place
-            self.boxCoordinates["pbox1"] = (Vector2(450, 275), False)
-            self.boxCoordinates["pbox2"] = (Vector2(500, 275), False)
-            self.boxCoordinates["pbox3"] = (Vector2(475, 200), False)
-            self.boxCoordinates["pbox4"] = (Vector2(350, 225), False)
-            self.boxCoordinates["pbox5"] = (Vector2(400, 425), False)
-            self.boxCoordinates["pbox6"] = (Vector2(692, 350), False)
-
+            self.boxCoordinates["pbox1"] = [Vector2(450, 275), False]
+            self.boxCoordinates["pbox2"] = [Vector2(500, 275), False]
+            self.boxCoordinates["pbox3"] = [Vector2(475, 200), False]
+            self.boxCoordinates["pbox4"] = [Vector2(350, 225), False]
+            self.boxCoordinates["pbox5"] = [Vector2(400, 425), False]
+            self.boxCoordinates["pbox6"] = [Vector2(692, 350), False]
 
         def update(self):
 
@@ -35,20 +33,26 @@ class CheckBoxes(WorldScript):
                     tgt_position = self.boxCoordinates[box.tag][0]
 
                     tgt_distance = box.transform.position - tgt_position
-                    if tgt_distance.sq_magnitude()< 100 :
-                        if box.rigid_body is not None:
-                            box.remove_component(RigidBody.tag)
-                        box.transform.position=tgt_position
-                # position of where boxes are supposed to go 
-                # used for testing purposes
-                pygame.draw.circle(self.world.engine.display, (255,255,255), (tgt_position.x, tgt_position.y), 2)
 
+                    #  if the player lets go close to the target position
+                    if tgt_distance.sq_magnitude() < 400 and (self.world.player.get_script("player move").selected_crate is not box):
+
+                        box.transform.position.x = tgt_position.x
+                        box.transform.position.y = tgt_position.y
+
+                        self.boxCoordinates[box.tag][1] = True
+
+                        print("snapped, " + box.tag)
+
+                # position of where boxes are supposed to go
+                # used for testing purposes
+                pygame.draw.circle(self.world.engine.display, (255, 255, 255), ( int(tgt_position.x), int(tgt_position.y)), 2)
 
 
 class PlayerMovement(BehaviorScript):
 
-    def __init__(self, script_name):
-        super(PlayerMovement, self).__init__(script_name)
+    def __init__(self):
+        super(PlayerMovement, self).__init__("player move")
         self.h_speed = 200
         self.v_speed = 300
         self.right = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
@@ -60,6 +64,8 @@ class PlayerMovement(BehaviorScript):
         self.up_left = pygame.image.load("assets/images/character/character_northwest.png").convert_alpha()
         self.down_right = pygame.image.load("assets/images/character/character_southeast.png").convert_alpha()
         self.down_left = pygame.image.load("assets/images/character/character_southwest.png").convert_alpha()
+
+        self.selected_crate = None
 
     def update(self):
 
@@ -97,32 +103,92 @@ class PlayerMovement(BehaviorScript):
         elif keys[pygame.K_s] and keys[pygame.K_a]:
             self.entity.renderer.sprite = self.down_left
 
+        # move the crate with the player
+        if self.selected_crate is not None:
+            v = self.entity.rigid_body.velocity
+            dt = self.entity.world.engine.delta_time
+
+            crate = self.selected_crate
+
+            # stop movement
+            # colliders of the world
+            entity_colliders = self.entity.world.boxes + self.entity.world.walls
+
+            move_x = 1
+            move_y = 1
+
+            for other in entity_colliders:
+
+                if crate is not other:
+
+                    # if the selected crate collided with anything else
+                    if PhysicsSystem.box2box_collision(crate.collider, other.collider):
+
+                        # figure out from what direction it hit the other object
+                        side = PhysicsSystem.calc_box_hit_orientation(crate.collider, other.collider)
+
+                        # get crate outside the collider
+                        PhysicsSystem._resolve_box2box_with_collider(side, crate.transform, crate.collider, other.collider)
+
+                        # stop the crate in place
+                        # hit from top or bottom
+                        if side == PhysicsSystem.bottom or side == PhysicsSystem.top:
+                            move_y = 0
+
+                        # hit from left or right
+                        elif side == PhysicsSystem.right or side == PhysicsSystem.left:
+                            move_x = 0
+
+            # move crate if possible
+            self.selected_crate.transform.position.x += v.x * dt * move_x
+            self.selected_crate.transform.position.y += v.y * dt * move_y
+
+            # stop the player too
+            self.entity.rigid_body.velocity.x *= move_x
+            self.entity.rigid_body.velocity.y *= move_y
+
     def take_input(self, event):
 
-        # this should grab a box in order to move it and position it 
-        # in the right place
+        # player decides to move crate. He must not be holding anything
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-            
-                # check to see if next to a box that you can gra
-                pass
-    def collision_event(self, other_collider):
+            if event.key == pygame.K_SPACE and self.selected_crate is None:
 
-        other_entity = other_collider.entity
+                # check if the player is near a box
+                for crate in self.entity.world.boxes:
+                    player = self.entity
+                    other = crate
 
-        # move the brick
-        if other_entity.tag == "pbox": 
-            # check to see if next to a box that you can grab
-            #other_collidessr.velocity = self.velocity
-            pass
-            
+                    temp_player_box = copy(player.collider.box)
+                    temp_other_box = copy(other.collider.box)
+
+                    # use the tolerance hit boxes to detect collision
+                    player.collider.box = player.collider.tolerance_hitbox
+                    other.collider.box = other.collider.tolerance_hitbox
+
+                    player.collider.box.center = temp_player_box.center
+                    other.collider.box.center = temp_other_box.center
+
+                    if PhysicsSystem.box2box_collision(player.collider, other.collider):
+                        self.selected_crate = crate
+
+                        # the crate becomes un-snapped
+                        self.entity.world.get_script("check boxes").boxCoordinates[crate.tag][1] = False
+
+                    # reset the collider boxes to the original ones
+                    player.collider.box = temp_player_box
+                    other.collider.box = temp_other_box
+
+            # player decides to stop moving crate
+            elif event.key == pygame.K_SPACE and self.selected_crate is not None:
+                self.selected_crate = None
+
+
 class PlatformWorld(World):
 
     def __init__(self):
         super(PlatformWorld, self).__init__()
 
         self.player = None
-        self.background = None
         self.box = None
         self.boxes = list()
 
@@ -132,136 +198,78 @@ class PlatformWorld(World):
         self.rightWall = None
         self.bottomWall = None
 
+        self.walls = None
+
     def load_scene(self):
-
-        # this is used to create the boundaries of the puzzle
-        w = self.engine.display.get_width()
-        h = self.engine.display.get_height()
-
-        # dimensions for the lamp that will follow player
-        # img_width = lamp_light_img.get_width()
-        # img_height = lamp_light_img.get_height()
-
-        # pivot = Vector2(img_width/2, img_height/2)
-
-        # self.lamp_mask = self.create_entity()
-        # self.lamp_mask.add_component(Transform(Vector2(0, 0)))
-        # self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
-        # self.lamp_mask.renderer.depth = -100
-
-
 
         background_image = pygame.image.load("assets/images/floors/Floor.png").convert()
         lamps_image  = pygame.image.load("assets/images/floors/Lamps.png").convert_alpha()
-        circle_mask = pygame.image.load( "assets/images/floors/vignette.png" ).convert_alpha()
-
 
         # add necessary components to be able to position and render 
         # the background
+        background = self.create_entity()
+        background.add_component(Transform(Vector2(0, 0)))
+        background.add_component(Renderer(background_image))
+        background.renderer.depth = 100
 
-        self.background = self.create_entity()
-        self.background.add_component(Transform(Vector2(0, 0)))
-        self.background.add_component(Renderer(background_image))
-        self.background.renderer.depth = 100
-
-        #add the lamps here
-
-        self.background_lamps = self.create_entity()
-        self.background_lamps.add_component(Transform(Vector2(0, 0)))
-        self.background_lamps.add_component(Renderer(lamps_image))
-        self.background_lamps.renderer.depth = -100
+        background_lamps = self.create_entity()
+        background_lamps.add_component(Transform(Vector2(0, 0)))
+        background_lamps.add_component(Renderer(lamps_image))
+        background_lamps.renderer.depth = -100
 
         # frames to demonstrate player animation
         frame1 = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
 
-        # frame2 = pygame.Surface((50, 50)).convert()
-        # frame2.fill((0, 255, 0))
-
-        # frame3 = pygame.Surface((50, 50)).convert()
-        # frame3.fill((0, 0, 255))
-
-        # frame4 = pygame.Surface((50, 50)).convert()
-        # frame4.fill((255, 255, 255))
-
+        # setupt the player
         self.player = self.create_game_object(frame1)
         self.player.add_component(RigidBody(Vector2(0, 0)))
         self.player.transform.position = Vector2(100, 100)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 1
-        self.player.add_script(PlayerMovement("player_move"))
+        self.player.add_script(PlayerMovement())
         self.player.collider.restitution = 1
-        self.player.collider.box.w -= 21
-        self.player.collider.box.h -= 8
-
-        # set up animation
-        # animation = Animator.Animation()
-
-        # add frames to animation
-        # animation.add_frame(frame1)
-        # animation.add_frame(frame2)
-        # animation.add_frame(frame3)
-        # animation.add_frame(frame4)
-
-        # set time between frames in seconds
-        # animation.frame_latency = 0.5
-
-        # set the first animation
-        # animator = Animator()
-        # animator.current_animation = animation
-
-        # add animator to player
-        # self.player.add_component(animator)
+        self.player.collider.box.w -= 60
+        self.player.collider.box.h -= 60
+        self.player.collider.tolerance_hitbox.w -= 60
+        self.player.collider.tolerance_hitbox.h -= 60
 
         # boxes to be moved around
         # 450, 275 # 500, 275 # 475, 200 # 350, 225 # 400, 425 # 725, 350
-
         box_image = pygame.image.load("assets/images/crates/FibonacciBox_37a.png").convert_alpha()
         pbox = self.create_game_object(box_image)
-        pbox.transform.position = Vector2(450, 100 )
+        pbox.transform.position = Vector2(450, 100)
         pbox.tag = "pbox1"
-        pbox.add_component(RigidBody(Vector2(0,0)))
         self.boxes.append(pbox)
-        pbox.transform.scale_by(0.5,0.5)
 
         box_image = pygame.image.load("assets/images/crates/FibonacciBox_37b.png").convert_alpha()
         pbox = self.create_game_object(box_image)
-        pbox.transform.position = Vector2(500, 100 )
+        pbox.transform.position = Vector2(500, 100)
         pbox.tag = "pbox2"
-        pbox.add_component(RigidBody(Vector2(0,0)))
         self.boxes.append(pbox)
-        pbox.transform.scale_by(0.5,0.5)
 
         box_image = pygame.image.load("assets/images/crates/FibonacciBox_74.png").convert_alpha()
         pbox = self.create_game_object(box_image)
-        pbox.transform.position = Vector2(475, 200 )
+        pbox.transform.position = Vector2(475, 200)
         pbox.tag = "pbox3"
-        pbox.add_component(RigidBody(Vector2(0,0)))
         self.boxes.append(pbox)
 
         box_image = pygame.image.load("assets/images/crates/FibonacciBox_111.png").convert_alpha()
         pbox = self.create_game_object(box_image)
-        pbox.transform.position = Vector2(350, 225 )
+        pbox.transform.position = Vector2(350, 225)
         pbox.tag = "pbox4"
-        pbox.add_component(RigidBody(Vector2(0,0)))
         self.boxes.append(pbox)
 
         box_image = pygame.image.load("assets/images/crates/FibonacciBox_185.png").convert_alpha()
         pbox = self.create_game_object(box_image)
-        pbox.transform.position = Vector2(452, 400 )
+        pbox.transform.position = Vector2(452, 400)
         pbox.tag = "pbox5"
-        pbox.add_component(RigidBody(Vector2(0,0)))
         self.boxes.append(pbox)
 
         box_image = pygame.image.load("assets/images/crates/FibonacciBox_296.png").convert_alpha()
         pbox = self.create_game_object(box_image)
-        pbox.transform.position = Vector2(692, 350 )
+        pbox.transform.position = Vector2(692, 350)
         pbox.tag = "pbox6"
-        pbox.add_component(RigidBody(Vector2(0,0)))
         self.boxes.append(pbox)
-        #pbox.transform.scale_by(0.5,0.5)
-        #pbox.collider.box.h -= 25
-
-
 
         #screen dimensions halved 
         half_w = self.engine.display.get_width()/2
@@ -281,7 +289,9 @@ class PlatformWorld(World):
         self.rightWall.transform.position = Vector2(half_w*2+50+50, half_h)
 
         PhysicsSystem.gravity.zero()
-        self.add_script(CheckBoxes("BoxChecking"))
+        self.add_script(CheckBoxes())
+
+        self.walls = [self.topWall, self.leftWall, self.rightWall, self.bottomWall]
 
 engine.set_world(PlatformWorld())
 engine.run()
