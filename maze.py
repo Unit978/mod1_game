@@ -150,11 +150,15 @@ class Maze(World):
         self.blocked4 = None
         self.blocked5 = None
         self.blocked6 = None
+        self.blocked7 = None
 
         # static maze walls
         self.new_wall = None
         # lamp for sprite
         self.lamp_mask = None
+
+        # if puzzle is complete
+        self.puzzle = False
 
     def construct_blocked_walls(self):
         l1c = (12, 4)
@@ -192,6 +196,12 @@ class Maze(World):
         self.blocked6.tag = "blocked6"
         _l6c = find_coordinate(l6c)
         self.blocked6.transform.position = Vector2(_l6c[0], _l6c[1])
+
+        l7c = (-1, 15)
+        self.blocked7 = self.create_game_object(tile)
+        self.blocked7.tag = "blocked7"
+        _l7c = find_coordinate(l7c)
+        self.blocked7.transform.position = Vector2(_l7c[0], _l7c[1])
 
     def construct_off_levers(self):
 
@@ -815,7 +825,7 @@ class Maze(World):
         for i in range(-1, 42):
             coordinates.append((i, -2))
         # bottom perimeter
-        for i in range(-1, 42):
+        for i in range(0, 42):
             coordinates.append((i, 15))
         # left perimeter wall
         for i in range(-2, 16):
@@ -861,7 +871,7 @@ class PlayerBehavior (BehaviorScript):
         self.touched_lever4 = False
         self.touched_lever5 = False
         self.touched_lever6 = False
-        self.touched_lever7 = None
+        self.touched_lever7 = False
 
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
@@ -914,6 +924,14 @@ class PlayerBehavior (BehaviorScript):
         elif other_entity.tag == "blocked6" and self.touched_lever6 is True:
             self.entity.world.destroy_entity(other_entity)
             block_removed.play()
+        elif other_entity.tag == "blocked7" and self.touched_lever7 is True:
+            self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
+            self.entity.world.puzzle = True
+            if self.entity.world.puzzle is True:
+                print "puzzle is complete"
+            else:
+                print "puzzle is not complete"
 
         if other_entity.tag == "wall":
             # bump_sound.play()
@@ -930,6 +948,9 @@ class PlayerBehavior (BehaviorScript):
         elif other_entity.tag == "blocked5" and self.touched_lever5 is False:
             blocked_wall.play()
         elif other_entity.tag == "blocked6" and self.touched_lever6 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked7" and self.touched_lever6 is False:
+            print "hit blocked 7"
             blocked_wall.play()
 
 engine.set_world(Maze())
