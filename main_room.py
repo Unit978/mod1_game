@@ -452,6 +452,7 @@ class PlatformWorld(World):
         book = self.create_box_collider_object(w, h)
         book.add_component(Renderer(img, pivot))
         book.transform.position = Vector2(400, 500)
+        book.tag = "book shelf"
 
         book.collider.is_trigger = True
         book.renderer.depth = 70
@@ -462,6 +463,7 @@ class PlatformWorld(World):
 
         book.collider.is_trigger = True
         book.renderer.depth = 70
+        book.tag = "book shelf"
 
     def load_backgrounds(self):
 
