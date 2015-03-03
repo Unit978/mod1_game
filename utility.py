@@ -9,6 +9,15 @@ from re import split
 from pygame import Surface
 from pygame import image
 from components import RigidBody
+from components import BoxCollider
+
+
+def set_lamp_light_attributes(lamp_light, rs):
+    lamp_light.renderer.depth = 10000
+    lamp_light.add_component(BoxCollider(50, 50))
+    lamp_light.collider.is_trigger = True
+    lamp_light.tag = "lamp light"
+    rs.light_sources.append(lamp_light)
 
 
 def set_floor_attributes(floor):
