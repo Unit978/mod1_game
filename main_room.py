@@ -8,9 +8,6 @@ from state_machine import *
 
 engine = Engine(1200, 700)
 
-# load music to play in the background
-mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
-
 monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
 
 
@@ -45,8 +42,7 @@ class MonsterMovement(BehaviorScript):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_r:
                 if self.killed_player:
-                    pass
-
+                    self.entity.world.engine.game.start()
 
     def collision_event(self, other_collider):
 
@@ -208,6 +204,10 @@ class PlatformWorld(World):
 
         self.lamp_lights = list()
 
+    def resume(self):
+        # load music to play in the background
+        mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
+
     def load_scene(self):
 
         w = self.engine.display.get_width()
@@ -250,7 +250,7 @@ class PlatformWorld(World):
         mixer.music.play(-1)
         mixer.music.set_volume(0.3)
 
-        PhysicsSystem.gravity.y += 200
+        self.get_system(PhysicsSystem.tag).gravity.y += 200
 
         self.add_script(UpdateAnimationHandler(self.player_anim_handler))
 
@@ -804,6 +804,6 @@ class PlatformWorld(World):
 
 
 
-engine.set_world(PlatformWorld())
-engine.run()
-
+# engine.set_world(PlatformWorld())
+# engine.run()
+#
