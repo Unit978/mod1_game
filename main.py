@@ -69,6 +69,31 @@ class Game(object):
     def go_to_main(self):
         self.engine.set_world(self.main_room)
 
+    def go_to_end(self):
+        screen = pygame.display.set_mode((1200, 700), pygame.HWSURFACE, 32)
+        title_screen = pygame.image.load("assets/images/gui/end_screen.png").convert()
+
+        x = 1200/2 - title_screen.get_width()/2
+        y = 700/2 - title_screen.get_height()/2
+
+        # show title screen
+        exit_title_screen = False
+        while not exit_title_screen:
+
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    Engine.clean_up()
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        exit_title_screen = True
+
+            screen.fill((0, 0, 0))
+            screen.blit(title_screen, (x, y))
+
+            pygame.display.update()
+        self.start()
+
 
 luminescence = Game()
 luminescence.start()
