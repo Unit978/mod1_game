@@ -164,7 +164,7 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 120.0
+        self.max_lamp_life = 180.0
         self.max_time_monster = 8.0
 
         # lamp light life in seconds
