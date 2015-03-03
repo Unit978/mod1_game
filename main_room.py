@@ -21,8 +21,23 @@ class UpdateAnimationHandler(WorldScript):
     def update(self):
         self.anim_state_machine.update()
 
-        # make the lamp mask follow the player
+        # make the lamp source follow the player
         self.world.lamp_source.transform.position = self.world.player.transform.position
+
+
+class TeleportCrate(BehaviorScript):
+
+    def __init__(self):
+        super(TeleportCrate, self).__init__("teleport crate")
+
+    # if the crate collides with a teleporter, spawn them from the ceilings at certain points
+    def collision_event(self, other_collider):
+
+        if other_collider.entity.name == "teleport a":
+            self.entity.transform.position = Vector2(500, -300)
+
+        elif other_collider.entity.name == "teleport b":
+            self.entity.transform.position = Vector2(1550, -300)
 
 
 class PlatformWorld(World):
@@ -51,35 +66,8 @@ class PlatformWorld(World):
         self.height = 1100
 
         # setup the render system for a dark environment
-        self.get_system(RenderSystem.tag).simulate_dark_env = True
+        #self.get_system(RenderSystem.tag).simulate_dark_env = True
         self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h)).convert()
-
-        # background_image = pygame.Surface((w, h))
-        # background_image.convert()
-        # background_image.fill((0, 0, 0))
-        #
-        # # add necessary components to be able to position and render the background
-        # background = self.create_renderable_object(background_image)
-        # background.renderer.pivot = Vector2(0, 0)
-        # background.renderer.depth = 100
-        # background.renderer.is_static = True
-
-        # lamp_light_img = pygame.image.load("assets/images/lights/lamp_light.png").convert_alpha()
-        # self.lamp_mask = self.create_renderable_object(lamp_light_img)
-        # self.lamp_mask.renderer.depth = -100
-        # self.lamp_mask.renderer.pivot.x -= 20
-        # self.lamp_mask.renderer.pivot.y -= 20
-
-        # lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_small.png").convert_alpha()
-        # l = self.create_renderable_object(lamp_light_img)
-        # l.renderer.depth = -90
-        # l.transform.position = Vector2(600, 300)
-
-        img = pygame.image.load("assets/images/circle_mask.png").convert_alpha()
-        self.lamp_source = self.create_renderable_object(img)
-        self.lamp_source.renderer.depth = 10000
-
-        self.get_system(RenderSystem.tag).light_sources.append(self.lamp_source)
 
         self.load_backgrounds()
         self.load_player()
@@ -90,6 +78,8 @@ class PlatformWorld(World):
         self.load_platforms()
         self.load_elevators()
         self.load_boxes()
+        self.load_lights()
+        self.load_book_shelves()
 
         # set up camera
         render = self.get_system(RenderSystem.tag)
@@ -105,7 +95,32 @@ class PlatformWorld(World):
 
         self.add_script(UpdateAnimationHandler(self.player_anim_handler))
 
+    def load_lights(self):
+
+        render_sys = self.get_system(RenderSystem.tag)
+
+        img = pygame.image.load("assets/images/lights/lamp_light_mask.png").convert_alpha()
+        self.lamp_source = self.create_renderable_object(img)
+        self.lamp_source.renderer.depth = 10000
+        render_sys.light_sources.append(self.lamp_source)
+
+    def load_book_shelves(self):
+        pass
+
     def load_backgrounds(self):
+
+        # load a plain black background that goes with the camera
+        w = self.engine.display.get_width()
+        h = self.engine.display.get_height()
+        background_image = pygame.Surface((w, h))
+        background_image.convert()
+        background_image.fill((0, 0, 0))
+
+        background = self.create_entity()
+        background.add_component(Transform(Vector2(0, 0)))
+        background.add_component(Renderer(background_image))
+        background.renderer.depth = 110
+        background.renderer.is_static = True
 
         path = "assets/images/backgrounds/"
         img = pygame.image.load(path + "eye_duck.png").convert_alpha()
@@ -166,7 +181,7 @@ class PlatformWorld(World):
         set_platform_attributes(plat_a)
 
         plat_b = self.create_game_object(img_400x30)
-        plat_b.transform.position = Vector2(400, 400)
+        plat_b.transform.position = Vector2(450, 400)
         set_platform_attributes(plat_b)
 
         shift = 200
@@ -190,10 +205,10 @@ class PlatformWorld(World):
         plat_g.transform.position = Vector2(2250-shift-100, 0)
         set_platform_attributes(plat_g)
 
-        plat_h = self.create_game_object(img_300x30)
-        plat_h.transform.position = Vector2(1800, -150)
-        set_platform_attributes(plat_h)
-        plat_h.add_script(PlatformMovement("plat move"))
+        # plat_h = self.create_game_object(img_300x30)
+        # plat_h.transform.position = Vector2(1800, -150)
+        # set_platform_attributes(plat_h)
+        # plat_h.add_script(PlatformMovement("plat move"))
 
         plat_i = self.create_game_object(img_800x150)
         plat_i.transform.position = Vector2(3150, 300)
@@ -331,6 +346,17 @@ class PlatformWorld(World):
             platform.add_script(ElevatorPlatMovement(spawn_point, "elev move"))
             platform.collider.treat_as_dynamic = True
 
+        # objects to detect crates
+        teleport_a = self.create_box_collider_object(200, 200)
+        teleport_a.collider.is_trigger = True
+        teleport_a.transform.position = Vector2(2475, -280)
+        teleport_a.name = "teleport a"
+
+        teleport_b = self.create_box_collider_object(200, 200)
+        teleport_b.collider.is_trigger = True
+        teleport_b.transform.position = Vector2(3650, -490)
+        teleport_b.name = "teleport b"
+
         # the elevator shaft
         path = "assets/images/environment/elevator/"
 
@@ -348,15 +374,29 @@ class PlatformWorld(World):
 
     def load_boxes(self):
         box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
-
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(900, 300)
         set_box_attributes(box)
+        box.add_script(TeleportCrate())
 
         box_img = pygame.image.load("assets/images/crates/gold_blue.png").convert_alpha()
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(500, 300)
         set_box_attributes(box)
+        box.add_script(TeleportCrate())
+
+        box_img = pygame.image.load("assets/images/crates/blue_green.png").convert_alpha()
+        box = self.create_game_object(box_img)
+        box.transform.position = Vector2(2000, 300)
+        set_box_attributes(box)
+        box.add_script(TeleportCrate())
+
+        box_img = pygame.image.load("assets/images/crates/blue_red.png").convert_alpha()
+        box = self.create_game_object(box_img)
+        box.transform.position = Vector2(2475, 300)
+        set_box_attributes(box)
+        box.add_script(TeleportCrate())
+
 
     def load_anims(self):
 
@@ -376,7 +416,7 @@ class PlatformWorld(World):
 
         # setup the walk animation
         anim = load_anim_from_directory(path_to_anims + "Walking/")
-        anim.frame_latency = 0.1
+        anim.frame_latency = 0.085
         state = AnimationStateMachine.AnimationState("walking", anim)
         self.player_anim_handler.add_state(state)
 
