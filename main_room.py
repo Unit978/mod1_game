@@ -49,11 +49,8 @@ class PlatformWorld(World):
         self.player_anim_handler = None
 
         self.ladders = list()
-
-        # self.lamp_mask = None
-        # self.light_source = None
-
         self.lamp_source = None
+        self.crates = list()
 
     def load_scene(self):
 
@@ -172,7 +169,7 @@ class PlatformWorld(World):
         img_400x30 = load(path + "30x400.png").convert_alpha()
         img_250x50 = load(path + "50x250.png").convert_alpha()
         img_400x120 = load(path + "120x400.png").convert_alpha()
-        img_300x30 = load(path + "30x300.png").convert_alpha()
+        # img_300x30 = load(path + "30x300.png").convert_alpha()
         img_800x150 = load(path + "150x800.png").convert_alpha()
         img_300x50 = load(path + "50x300.png").convert_alpha()
 
@@ -202,7 +199,7 @@ class PlatformWorld(World):
         set_platform_attributes(plat_f)
 
         plat_g = self.create_game_object(img_200x30)
-        plat_g.transform.position = Vector2(2250-shift-100, 0)
+        plat_g.transform.position = Vector2(2250-shift-50, -50)
         set_platform_attributes(plat_g)
 
         # plat_h = self.create_game_object(img_300x30)
@@ -378,24 +375,28 @@ class PlatformWorld(World):
         box.transform.position = Vector2(900, 300)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
+        self.crates.append(box)
 
         box_img = pygame.image.load("assets/images/crates/gold_blue.png").convert_alpha()
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(500, 300)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
+        self.crates.append(box)
 
         box_img = pygame.image.load("assets/images/crates/blue_green.png").convert_alpha()
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(2000, 300)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
+        self.crates.append(box)
 
         box_img = pygame.image.load("assets/images/crates/blue_red.png").convert_alpha()
         box = self.create_game_object(box_img)
         box.transform.position = Vector2(2475, 300)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
+        self.crates.append(box)
 
     def load_anims(self):
 
