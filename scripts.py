@@ -152,6 +152,15 @@ class PlayerPlatformMovement(BehaviorScript):
             else:
                 self.holding_crate = False
 
+            # test to see if the player wants to move a crate
+            if keys[pygame.K_LCTRL]:
+
+                # make sure the player is near a crate
+                result = self.check_if_near_crate()
+                if result[0]:
+                    crate = result[1]
+                    crate.rigid_body.velocity.x = self.entity.rigid_body.velocity.x
+
         if self.entity.get_script("player climb").climbing:
 
             if keys[pygame.K_a]:
@@ -219,19 +228,20 @@ class PlayerPlatformMovement(BehaviorScript):
             if PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider) == PhysicsSystem.bottom:
                 self.grounded = True
 
-        if other_collider.entity.tag == "box":
-
-            # check if the player hits the box from the sides
-            side = PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider)
-
-            direction = 1
-            # hit the other object from the left
-            if side == PhysicsSystem.left:
-                direction = -1
-
-            if side == PhysicsSystem.left or side == PhysicsSystem.right:
-                if self.grounded and self.holding_crate:
-                    other_collider.entity.rigid_body.velocity.x = 4*self.h_speed/5.0 * direction
+        # collides with a crate
+        # if other_collider.entity.tag == "box":
+        #
+        #     # check if the player hits the box from the sides
+        #     side = PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider)
+        #
+        #     direction = 1
+        #     # hit the other object from the left
+        #     if side == PhysicsSystem.left:
+        #         direction = -1
+        #
+        #     if side == PhysicsSystem.left or side == PhysicsSystem.right:
+        #         if self.grounded and self.holding_crate:
+        #             other_collider.entity.rigid_body.velocity.x = 4*self.h_speed/5.0 * direction
 
     def test_if_grounded(self):
 
@@ -270,6 +280,54 @@ class PlayerPlatformMovement(BehaviorScript):
                     # reset the collider boxes to the original ones
                     player.collider.box = temp_player_box
                     other.collider.box = temp_other_box
+
+    def check_if_near_crate(self):
+
+        result = (False, None)
+
+        # check if the player is near a box
+        for crate in self.entity.world.crates:
+            player = self.entity
+
+            temp_player_box = copy(player.collider.box)
+            temp_other_box = copy(crate.collider.box)
+
+            # use the tolerance hit boxes to detect collision
+            player.collider.box = player.collider.tolerance_hitbox
+            crate.collider.box = crate.collider.tolerance_hitbox
+
+            player.collider.box.center = temp_player_box.center
+            crate.collider.box.center = temp_other_box.center
+
+            if PhysicsSystem.box2box_collision(player.collider, crate.collider):
+
+                side = PhysicsSystem.calc_box_hit_orientation(player.collider, crate.collider)
+
+                if side == PhysicsSystem.left or side == PhysicsSystem.right:
+                    result = (True, crate)
+
+                # some glitchy behavior required to offset the crate forward if the player moved the crate
+                # towards to right and pushed the crate from the left side. Basically, we check the distance
+                # between centers of the player and crate, and if the sum of the half-widths of both tolerance
+                # hit boxes (of the player and create) are greater then the distance then we must offset
+                # the create towards to right by some value
+
+                distance = crate.transform.position - player.transform.position
+                dx = abs(distance.x)
+                x_tolerance_distance = crate.collider.tolerance_hitbox.w/2.0 + player.collider.tolerance_hitbox.w/2.0
+
+                if dx < x_tolerance_distance-2:
+                    shift = x_tolerance_distance - dx
+                    # Player hits rate from his right and is pushing right
+                    if side == PhysicsSystem.right and player.rigid_body.velocity.x > 0:
+                        crate.transform.position.x += shift-20
+
+
+            # reset the collider boxes to the original ones
+            player.collider.box = temp_player_box
+            crate.collider.box = temp_other_box
+
+        return result
 
 
 class PlayerClimbing(BehaviorScript):
