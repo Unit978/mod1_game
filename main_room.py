@@ -750,7 +750,7 @@ class PlatformWorld(World):
         pivot = Vector2(w/2, h/2)
 
         self.monster.add_component(Renderer(img, pivot))
-        self.monster.add_component(BoxCollider(w, h))
+        self.monster.add_component(BoxCollider(50, 50))
         self.monster.add_script(MonsterMovement())
         self.monster.collider.is_trigger = True
         self.monster.renderer.depth = -10
