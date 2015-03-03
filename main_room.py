@@ -83,7 +83,7 @@ class PlatformWorld(World):
         self.height = 1100
 
         # setup the render system for a dark environment
-        #self.get_system(RenderSystem.tag).simulate_dark_env = True
+        self.get_system(RenderSystem.tag).simulate_dark_env = True
         self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h)).convert()
 
         self.load_backgrounds()
@@ -117,10 +117,54 @@ class PlatformWorld(World):
 
         render_sys = self.get_system(RenderSystem.tag)
 
-        img = pygame.image.load("assets/images/lights/lamp_light_mask.png").convert_alpha()
-        self.lamp_source = self.create_renderable_object(img)
+        large_lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_mask.png").convert_alpha()
+        self.lamp_source = self.create_renderable_object(large_lamp_light_img)
         self.lamp_source.renderer.depth = 10000
         render_sys.light_sources.append(self.lamp_source)
+
+        lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_small_mask.png").convert_alpha()
+        lamp_img = pygame.image.load("assets/images/environment/lamp.png").convert_alpha()
+
+        # LAMP AT WALL A
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(185, 80)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(185, 80)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+
+        # LAMP AT PLATFORM B
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(600, 415)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(600, 415)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # LAMP AT PLATFORM F
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(2000, -20)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(2000, -20)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # OVER SAW
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(2800, 200)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(2800, 200)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # At right end of the level
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(4550, 380)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(4550, 380)
+        set_lamp_light_attributes(lamp_light, render_sys)
 
     def load_saw(self):
 
@@ -468,7 +512,7 @@ class PlatformWorld(World):
 
         box_img = pygame.image.load("assets/images/crates/blue_green.png").convert_alpha()
         box = self.create_game_object(box_img)
-        box.transform.position = Vector2(2000, 300)
+        box.transform.position = Vector2(1300, -320)
         set_box_attributes(box)
         box.add_script(TeleportCrate())
         self.crates.append(box)
