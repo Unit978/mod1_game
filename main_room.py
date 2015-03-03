@@ -322,8 +322,7 @@ class PlatformWorld(World):
 
     def load_scene(self):
 
-        img = pygame.Surface((200, 200)).convert()
-        img.fill((255, 0, 0))
+        img = pygame.image.load("assets/images/gui/hint.png").convert()
         self.text = self.engine.gui.Widget(img, Vector2(0, 0))
 
         w = self.engine.display.get_width()
