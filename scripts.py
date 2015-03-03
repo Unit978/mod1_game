@@ -63,47 +63,47 @@ class ElevatorPlatMovement(BehaviorScript):
             self.entity.transform.position.y = self.spawn_point.y
 
 
-# add movement to a platform but have it ignore physical properties
-class PlatformMovement(BehaviorScript):
-
-    def __init__(self, script_name):
-        super(PlatformMovement, self).__init__(script_name)
-        self.h_speed = 100
-        self.velocity = Vector2(self.h_speed, 0)
-
-    # implement custom movement without rigid
-    def update(self):
-        dt = self.entity.world.engine.delta_time
-        transform = self.entity.transform
-        transform.position += self.velocity * dt
-
-        w = self.entity.collider.box.width
-
-        right_limit = 2000
-        left_limit = 800
-
-        right = transform.position.x + w/2
-        left = transform.position.x - w/2
-
-        if right > right_limit:
-            delta = right - right_limit
-            transform.position.x -= delta
-
-            self.velocity.x *= -1
-
-        elif left < left_limit:
-            delta = left_limit - left
-            transform.position.x += delta
-
-            self.velocity *= -1
-
-    def collision_event(self, other_collider):
-
-        # have the player go along with the platform
-        if other_collider.entity.name == "player":
-            other_collider.entity.rigid_body.velocity.x = self.velocity.x
-
-            # apply friction sliding ???
+# # add movement to a platform but have it ignore physical properties
+# class PlatformMovement(BehaviorScript):
+#
+#     def __init__(self, script_name):
+#         super(PlatformMovement, self).__init__(script_name)
+#         self.h_speed = 100
+#         self.velocity = Vector2(self.h_speed, 0)
+#
+#     # implement custom movement without rigid
+#     def update(self):
+#         dt = self.entity.world.engine.delta_time
+#         transform = self.entity.transform
+#         transform.position += self.velocity * dt
+#
+#         w = self.entity.collider.box.width
+#
+#         right_limit = 2000
+#         left_limit = 800
+#
+#         right = transform.position.x + w/2
+#         left = transform.position.x - w/2
+#
+#         if right > right_limit:
+#             delta = right - right_limit
+#             transform.position.x -= delta
+#
+#             self.velocity.x *= -1
+#
+#         elif left < left_limit:
+#             delta = left_limit - left
+#             transform.position.x += delta
+#
+#             self.velocity *= -1
+#
+#     def collision_event(self, other_collider):
+#
+#         # have the player go along with the platform
+#         if other_collider.entity.name == "player":
+#             other_collider.entity.rigid_body.velocity.x = self.velocity.x
+#
+#             # apply friction sliding ???
 
 
 # This script defines the behavior of how the player moves in a 2d side scroller world
@@ -111,7 +111,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerPlatformMovement, self).__init__(script_name)
-        self.h_speed = 200
+        self.h_speed = 240
         self.v_speed = 350
         self.moving = False
 
@@ -362,36 +362,3 @@ class PlayerClimbing(BehaviorScript):
             if PhysicsSystem.box2box_collision(self.entity.collider, ladder.collider):
                 return True
         return False
-
-
-# This script defines the behavior of how the player moves from a top down
-# view world.
-class PlayerTopDownMovement(BehaviorScript):
-
-    def __init__(self, script_name):
-        super(PlayerTopDownMovement, self).__init__(script_name)
-        self.speed = 200.0
-
-    def update(self):
-
-        keys = pygame.key.get_pressed()
-
-        velocity = self.entity.rigid_body.velocity
-
-        if keys[pygame.K_a]:
-            velocity.x = -self.speed
-
-        elif keys[pygame.K_d]:
-            velocity.x = self.speed
-
-        else:
-            velocity.x = 0
-
-        if keys[pygame.K_w]:
-            velocity.y = -self.speed
-
-        elif keys[pygame.K_s]:
-            velocity.y = self.speed
-
-        else:
-            velocity.y = 0
