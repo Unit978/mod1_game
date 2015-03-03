@@ -59,7 +59,7 @@ class ExitMainRoom(WorldScript):
 
         # check to see of the puzzles are finished
         if not self.puzzles_done:
-            self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.main_room.puzzle
+            self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.maze_room.puzzle
 
         # elevator hasnt been triggered yet
         elevator_cabin = self.world.get_entity_by_tag("cabin")
@@ -201,7 +201,7 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 180.0
+        self.max_lamp_life = 220.0
         self.max_time_monster = 8.0
 
         # lamp light life in seconds
@@ -582,7 +582,7 @@ class PlatformWorld(World):
         img_300x50 = load(path + "50x300.png").convert_alpha()
 
         plat_a = self.create_game_object(img_200x30)
-        plat_a.transform.position = Vector2(300, 250+50)
+        plat_a.transform.position = Vector2(300, 250+50+50)
         set_platform_attributes(plat_a)
 
         plat_b = self.create_game_object(img_400x30)
@@ -635,7 +635,7 @@ class PlatformWorld(World):
         img_600x170 = load(path + "170x600.png").convert_alpha()
 
         wall_a = self.create_game_object(img_200x500)
-        wall_a.transform.position = Vector2(100, 350)
+        wall_a.transform.position = Vector2(100, 350+75)
         set_wall_attributes(wall_a)
 
         wall_b = self.create_game_object(img_200x350)
