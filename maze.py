@@ -36,6 +36,8 @@ bump_sound.set_volume(0.2)
 block_removed.set_volume(0.3)
 blocked_wall.set_volume(0.3)
 
+complete = False
+
 
 def create_blocked_wall(c1, c2):
         lever = pygame.Surface(((c2[0]-c1[0])*scale_x, (c2[1]-c1[1])*scale_y)).convert()
@@ -156,6 +158,9 @@ class Maze(World):
         # lamp for sprite
         self.lamp_mask = None
 
+        # if puzzle is complete
+        self.complete = "Test"
+
     def construct_blocked_walls(self):
         l1c = (12, 4)
         self.blocked1 = self.create_game_object(tile)
@@ -273,7 +278,6 @@ class Maze(World):
         _l6c = find_coordinate(l6c)
         self.lever6.transform.position = Vector2(_l6c[0], _l6c[1])
 
-        # coordinates.append((6, 8))
         l7c = (6, 8)
         self.lever7 = self.create_game_object(off_switch_state_off)
         self.lever7.add_component(animator_7)
@@ -330,6 +334,53 @@ class Maze(World):
         self.new_wall.tag = "wall"
         c1 = find_coordinate(c)
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
+
+    def construct_end(self):
+        vertical_beam = pygame.image.load("assets/images/tiles/vertical_beam.png").convert_alpha()
+        # (-1, 8)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 8))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (-1, 9)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 9))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (-1, 10)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 10))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (-1, 11)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 11))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (-1, 12)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 12))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (-1, 13)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 13))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (-1, 14)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((-1, 14))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (8, 8)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((8, 8))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (8, 9)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((8, 9))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (3, 9)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((3, 9))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
+        # (3, 8)
+        new_wall = self.create_renderable_object(vertical_beam)
+        c1 = find_coordinate((3, 8))
+        new_wall.transform.position = Vector2(c1[0], c1[1])
 
     def load_scene(self):
 
@@ -718,7 +769,7 @@ class Maze(World):
         coordinates.append((33, 9))
         coordinates.append((34, 9))
         coordinates.append((35, 9))
-        coordinates.append((-1, 1))
+        # coordinates.append((-1, 1))
 
         # =========================================Perimeter=======================================
 
@@ -737,7 +788,6 @@ class Maze(World):
             coordinates.append((42, i))
 
         self.player.add_script(PlayerBehavior("player behavior"))
-
         # add camera
         render = self.get_system(RenderSystem.tag)
         render.camera = self.create_entity()
@@ -772,6 +822,7 @@ class PlayerBehavior (BehaviorScript):
         self.touched_lever4 = False
         self.touched_lever5 = False
         self.touched_lever6 = False
+        self.touched_lever7 = False
 
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
@@ -793,16 +844,18 @@ class PlayerBehavior (BehaviorScript):
             self.touched_lever4 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever5_off":
-            # print "You hit lever 5!"
+            print "You hit lever 5!"
             self.touched_lever5 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever6_off":
-            # print "You hit lever 6!"
+            print "You hit lever 6!"
             self.touched_lever6 = True
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever7_off":
-            # print "You hit lever 7!"
-            self.touched_lever6 = True
+            print "You hit lever 7!"
+            # self.entity.world.complete = True
+            self.entity.world.construct_end()
+            self.touched_lever7 = True
             self.entity.world.destroy_entity(other_entity)
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
