@@ -32,6 +32,7 @@ mixer.music.load("assets/music/VoiceInMyHead.ogg")
 bump_sound = mixer.Sound("assets/sound/bump.WAV")
 block_removed = mixer.Sound("assets/sound/dooropen.WAV")
 blocked_wall = mixer.Sound("assets/sound/effect_ice1.WAV")
+puzzle_finished_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
 bump_sound.set_volume(0.2)
 block_removed.set_volume(0.3)
 blocked_wall.set_volume(0.3)
@@ -75,7 +76,7 @@ class PlayerMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerMovement, self).__init__(script_name)
-        self.speed = 200.0
+        self.speed = 300.0
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -112,11 +113,13 @@ class PlayerMovement(BehaviorScript):
         elif keys[pygame.K_s] and keys[pygame.K_a]:
             self.entity.renderer.sprite = player_image_southwest
 
-    def take_input(self, event):
-        pass
-        # if event.type == pygame.KEYDOWN:
-        #     if event.key == pygame.K_SPACE:
-        #         self.entity.rigid_body.velocity.y = -self.v_speed
+    def collision_event(self, other_collider):
+
+        # if the player hit the exit trigger to get out of the maze
+        if other_collider.entity == self.entity.world.exit_object_trigger:
+
+            # take the player back to the main room
+            print("taking you back to main room")
 
 
 class Maze(World):
@@ -159,6 +162,9 @@ class Maze(World):
 
         # if puzzle is complete
         self.puzzle = False
+
+        # this object signals that the player completed the puzzle and can exit the maze
+        self.exit_object_trigger = None
 
     def construct_blocked_walls(self):
         l1c = (12, 4)
@@ -342,6 +348,10 @@ class Maze(World):
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
 
     def end_path(self):
+
+        # play the sound the effect to let the player know that the puzzle was completed
+        puzzle_finished_sfx.play()
+
         self.destroy_entity(self.blocked7)
         vertical_beam = pygame.image.load("assets/images/tiles/vertical_beam.png").convert_alpha()
 
@@ -508,7 +518,6 @@ class Maze(World):
         floor_9.renderer.depth = 100
 
         # =========================================Create Player====================================
-
         self.player = self.create_game_object(player_image_north)
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(0, 0)
@@ -518,8 +527,13 @@ class Maze(World):
         self.player.collider.restitution = 1
         self.player.collider.set_box(30, 30)
 
+        # ==================================== Trigger Exit Object ===============================
+        self.exit_object_trigger = self.create_box_collider_object(500, 200)
+        self.exit_object_trigger.transform.position = Vector2(0, 1650)
+        self.exit_object_trigger.collider.is_trigger = True
+
         # =============================================Static Maze Tiles==========================
-        coordinates = []
+        coordinates = list()
         coordinates.append((0, 1))  # 1
         coordinates.append((0, 2))  # 2
         coordinates.append((0, 3))  # 3
