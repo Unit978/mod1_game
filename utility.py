@@ -9,6 +9,15 @@ from re import split
 from pygame import Surface
 from pygame import image
 from components import RigidBody
+from components import BoxCollider
+
+
+def set_lamp_light_attributes(lamp_light, rs):
+    lamp_light.renderer.depth = 10000
+    lamp_light.add_component(BoxCollider(50, 50))
+    lamp_light.collider.is_trigger = True
+    lamp_light.tag = "lamp light"
+    rs.light_sources.append(lamp_light)
 
 
 def set_floor_attributes(floor):
@@ -46,7 +55,7 @@ def set_box_attributes(box):
 
     box.add_component(RigidBody())
     box.rigid_body.velocity = Vector2(0.0, 0.0)
-    box.rigid_body.gravity_scale = 3.2
+    box.rigid_body.gravity_scale = 2.5
     box.tag = "box"
 
 
@@ -100,7 +109,7 @@ def create_img_from_tile(tile_surface, width, height):
     dst_surface = Surface(size).convert()
 
     # make the dst_surface transparent
-    color_mask = (123, 54, 33)
+    color_mask = (7, 13, 17)
     dst_surface.fill(color_mask)
     dst_surface.set_colorkey(color_mask)
 

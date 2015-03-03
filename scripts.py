@@ -22,13 +22,6 @@ class CameraFollow(BehaviorScript):
         x = self.target_transform.position.x - self.width/2
         y = self.target_transform.position.y - self.height/2
 
-        renderer = self.target_transform.entity.renderer
-
-        # center around the image attached to the target transform
-        if renderer is not None:
-            x += renderer.sprite.get_width()/2
-            y += renderer.sprite.get_height()/2
-
         world = self.entity.world
 
         # keep camera within world bounds
@@ -70,47 +63,47 @@ class ElevatorPlatMovement(BehaviorScript):
             self.entity.transform.position.y = self.spawn_point.y
 
 
-# add movement to a platform but have it ignore physical properties
-class PlatformMovement(BehaviorScript):
-
-    def __init__(self, script_name):
-        super(PlatformMovement, self).__init__(script_name)
-        self.h_speed = 100
-        self.velocity = Vector2(self.h_speed, 0)
-
-    # implement custom movement without rigid
-    def update(self):
-        dt = self.entity.world.engine.delta_time
-        transform = self.entity.transform
-        transform.position += self.velocity * dt
-
-        w = self.entity.collider.box.width
-
-        right_limit = 2000
-        left_limit = 800
-
-        right = transform.position.x + w/2
-        left = transform.position.x - w/2
-
-        if right > right_limit:
-            delta = right - right_limit
-            transform.position.x -= delta
-
-            self.velocity.x *= -1
-
-        elif left < left_limit:
-            delta = left_limit - left
-            transform.position.x += delta
-
-            self.velocity *= -1
-
-    def collision_event(self, other_collider):
-
-        # have the player go along with the platform
-        if other_collider.entity.name == "player":
-            other_collider.entity.rigid_body.velocity.x = self.velocity.x
-
-            # apply friction sliding ???
+# # add movement to a platform but have it ignore physical properties
+# class PlatformMovement(BehaviorScript):
+#
+#     def __init__(self, script_name):
+#         super(PlatformMovement, self).__init__(script_name)
+#         self.h_speed = 100
+#         self.velocity = Vector2(self.h_speed, 0)
+#
+#     # implement custom movement without rigid
+#     def update(self):
+#         dt = self.entity.world.engine.delta_time
+#         transform = self.entity.transform
+#         transform.position += self.velocity * dt
+#
+#         w = self.entity.collider.box.width
+#
+#         right_limit = 2000
+#         left_limit = 800
+#
+#         right = transform.position.x + w/2
+#         left = transform.position.x - w/2
+#
+#         if right > right_limit:
+#             delta = right - right_limit
+#             transform.position.x -= delta
+#
+#             self.velocity.x *= -1
+#
+#         elif left < left_limit:
+#             delta = left_limit - left
+#             transform.position.x += delta
+#
+#             self.velocity *= -1
+#
+#     def collision_event(self, other_collider):
+#
+#         # have the player go along with the platform
+#         if other_collider.entity.name == "player":
+#             other_collider.entity.rigid_body.velocity.x = self.velocity.x
+#
+#             # apply friction sliding ???
 
 
 # This script defines the behavior of how the player moves in a 2d side scroller world
@@ -118,7 +111,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerPlatformMovement, self).__init__(script_name)
-        self.h_speed = 200
+        self.h_speed = 240
         self.v_speed = 350
         self.moving = False
 
@@ -158,6 +151,15 @@ class PlayerPlatformMovement(BehaviorScript):
                 self.holding_crate = True
             else:
                 self.holding_crate = False
+
+            # test to see if the player wants to move a crate
+            if keys[pygame.K_LCTRL]:
+
+                # make sure the player is near a crate
+                result = self.check_if_near_crate()
+                if result[0]:
+                    crate = result[1]
+                    crate.rigid_body.velocity.x = self.entity.rigid_body.velocity.x
 
         if self.entity.get_script("player climb").climbing:
 
@@ -220,25 +222,11 @@ class PlayerPlatformMovement(BehaviorScript):
         tag = other_collider.entity.tag
 
         # collided with a wall, floor, platform
-        if tag == "wall" or tag == "floor" or tag == "platform" or "box":
+        if tag == "wall" or tag == "floor" or tag == "platform" or tag == "box" or tag == "cabin":
 
             # hit from the top which means that this collider bottom side was hit by the other collider
             if PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider) == PhysicsSystem.bottom:
                 self.grounded = True
-
-        if other_collider.entity.tag == "box":
-
-            # check if the player hits the box from the sides
-            side = PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider)
-
-            direction = 1
-            # hit the other object from the left
-            if side == PhysicsSystem.left:
-                direction = -1
-
-            if side == PhysicsSystem.left or side == PhysicsSystem.right:
-                if self.grounded and self.holding_crate:
-                    other_collider.entity.rigid_body.velocity.x = 4*self.h_speed/5.0 * direction
 
     def test_if_grounded(self):
 
@@ -252,7 +240,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
                 # check if the player collided with a wall, box, or platform
                 tag = other.tag
-                if tag == "wall" or tag == "platform" or tag == "box" or tag == "floor":
+                if tag == "wall" or tag == "platform" or tag == "box" or tag == "floor" or tag == "cabin":
 
                     player = self.entity
 
@@ -277,6 +265,76 @@ class PlayerPlatformMovement(BehaviorScript):
                     # reset the collider boxes to the original ones
                     player.collider.box = temp_player_box
                     other.collider.box = temp_other_box
+
+    def check_if_near_crate(self):
+
+        result = (False, None)
+
+        # check if the player is near a box
+        for crate in self.entity.world.crates:
+
+            # this code stops crates from being pushed inside of colliders such as walls
+            for entity in self.entity.world.entity_manager.entities:
+
+                # collider exists and is not a trigger
+                valid_collider = entity.collider is not None and not entity.collider.is_trigger
+
+                # dont consider the player or yourself during this collision test
+                if valid_collider and entity is not self.entity and entity is not crate:
+
+                    # collision occurs
+                    if PhysicsSystem.box2box_collision(crate.collider, entity.collider):
+
+                        # check of the collision occurred from the sides
+                        side = PhysicsSystem.calc_box_hit_orientation(crate.collider, entity.collider)
+                        if side == PhysicsSystem.left or side == PhysicsSystem.right:
+
+                            # stop the crate from moving
+                            return False, None
+
+            player = self.entity
+
+            temp_player_box = copy(player.collider.box)
+            temp_other_box = copy(crate.collider.box)
+
+            # use the tolerance hit boxes to detect collision
+            player.collider.box = player.collider.tolerance_hitbox
+            crate.collider.box = crate.collider.tolerance_hitbox
+
+            player.collider.box.center = temp_player_box.center
+            crate.collider.box.center = temp_other_box.center
+
+            if PhysicsSystem.box2box_collision(player.collider, crate.collider):
+
+                side = PhysicsSystem.calc_box_hit_orientation(player.collider, crate.collider)
+
+                if side == PhysicsSystem.left or side == PhysicsSystem.right:
+                    result = (True, crate)
+
+                # some glitchy behavior required to offset the crate forward if the player moved the crate
+                # towards to right and pushed the crate from the left side. Basically, we check the distance
+                # between centers of the player and crate, and if the sum of the half-widths of both tolerance
+                # hit boxes (of the player and create) are greater then the distance then we must offset
+                # the create towards to right by some value
+
+                distance = crate.transform.position - player.transform.position
+                dx = abs(distance.x)
+                x_tolerance_distance = crate.collider.tolerance_hitbox.w/2.0 + player.collider.tolerance_hitbox.w/2.0
+
+                if dx < x_tolerance_distance-2:
+                    shift = x_tolerance_distance - dx
+                    # Player hits rate from his right and is pushing right
+                    if side == PhysicsSystem.right and player.rigid_body.velocity.x > 0:
+                        crate.transform.position.x += shift-20
+
+                    elif side == PhysicsSystem.left and player.rigid_body.velocity.x < 0:
+                        crate.transform.position.x -= shift-20
+
+            # reset the collider boxes to the original ones
+            player.collider.box = temp_player_box
+            crate.collider.box = temp_other_box
+
+        return result
 
 
 class PlayerClimbing(BehaviorScript):
@@ -369,36 +427,3 @@ class PlayerClimbing(BehaviorScript):
             if PhysicsSystem.box2box_collision(self.entity.collider, ladder.collider):
                 return True
         return False
-
-
-# This script defines the behavior of how the player moves from a top down
-# view world.
-class PlayerTopDownMovement(BehaviorScript):
-
-    def __init__(self, script_name):
-        super(PlayerTopDownMovement, self).__init__(script_name)
-        self.speed = 200.0
-
-    def update(self):
-
-        keys = pygame.key.get_pressed()
-
-        velocity = self.entity.rigid_body.velocity
-
-        if keys[pygame.K_a]:
-            velocity.x = -self.speed
-
-        elif keys[pygame.K_d]:
-            velocity.x = self.speed
-
-        else:
-            velocity.x = 0
-
-        if keys[pygame.K_w]:
-            velocity.y = -self.speed
-
-        elif keys[pygame.K_s]:
-            velocity.y = self.speed
-
-        else:
-            velocity.y = 0

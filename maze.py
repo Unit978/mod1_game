@@ -2,8 +2,10 @@
 from world import *
 from engine import *
 from components import BehaviorScript
+from scripts import CameraFollow
 
 engine = Engine(1200, 700)
+
 scale_x = 56  # original 56
 scale_y = 100  # original 100
 tile = pygame.image.load("assets/images/tiles/56x100 tile.png").convert()
@@ -15,6 +17,23 @@ player_image_north = pygame.image.load("assets/images/character/character_north.
 player_image_south = pygame.image.load("assets/images/character/character_south.png").convert_alpha()
 player_image_east = pygame.image.load("assets/images/character/character_east.png").convert_alpha()
 player_image_west = pygame.image.load("assets/images/character/character_west.png").convert_alpha()
+
+
+player_image_northeast = pygame.image.load("assets/images/character/character_northeast.png").convert_alpha()
+player_image_northwest = pygame.image.load("assets/images/character/character_northwest.png").convert_alpha()
+player_image_southeast = pygame.image.load("assets/images/character/character_southeast.png").convert_alpha()
+player_image_southwest = pygame.image.load("assets/images/character/character_southwest.png").convert_alpha()
+
+
+lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_1200x700.png").convert_alpha()
+
+bump_sound = mixer.Sound("assets/sound/bump.WAV")
+block_removed = mixer.Sound("assets/sound/dooropen.WAV")
+blocked_wall = mixer.Sound("assets/sound/effect_ice1.WAV")
+puzzle_finished_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
+bump_sound.set_volume(0.2)
+block_removed.set_volume(0.3)
+blocked_wall.set_volume(0.3)
 
 
 def create_blocked_wall(c1, c2):
@@ -40,52 +59,22 @@ def find_coordinate(c):
         return coordinate
 
 
-class CameraFollow(BehaviorScript):
+class LightFollow(WorldScript):
 
-    def __init__(self, script_name, target_transform, cam_width, cam_height):
-        super(CameraFollow, self).__init__(script_name)
-        self.target_transform = target_transform
-        self.width = cam_width
-        self.height = cam_height
+    def __init__(self):
+        super(LightFollow, self).__init__("light follow")
 
     def update(self):
 
-        # center the target transform in the middle of the camera
-        x = self.target_transform.position.x - self.width/2
-        y = self.target_transform.position.y - self.height/2
-
-        renderer = self.target_transform.entity.renderer
-
-        # center around the image attached to the target transform
-        if renderer is not None:
-            x += renderer.sprite.get_width()/2
-            y += renderer.sprite.get_height()/2
-
-        world = self.entity.world
-
-        # keep camera within world bounds
-        if world.is_bounded():
-            if x < world.origin.x:
-                x = world.origin.x
-
-            elif x > world.origin.x + world.width - self.width:
-                x = world.origin.x + world.width - self.width
-
-            if y < world.origin.y:
-                y = world.origin.y
-
-            elif y > world.origin.y + world.height - self.height:
-                y = world.origin.y + world.height - self.height
-
-        # set the camera position accordingly
-        self.entity.transform.position = Vector2(x, y)
+        # make the lamp mask follow the player
+        self.world.lamp_mask.transform.position = self.world.player.transform.position
 
 
 class PlayerMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerMovement, self).__init__(script_name)
-        self.speed = 200.0
+        self.speed = 300.0
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -98,26 +87,40 @@ class PlayerMovement(BehaviorScript):
         elif keys[pygame.K_d]:
             velocity.x = self.speed
             self.entity.renderer.sprite = player_image_east
-
         else:
             velocity.x = 0
 
         if keys[pygame.K_w]:
             velocity.y = -self.speed
             self.entity.renderer.sprite = player_image_north
-            # print "North"
         elif keys[pygame.K_s]:
             velocity.y = self.speed
             self.entity.renderer.sprite = player_image_south
-            # print "South"
         else:
             velocity.y = 0
 
-    def take_input(self, event):
-        pass
-        # if event.type == pygame.KEYDOWN:
-        #     if event.key == pygame.K_SPACE:
-        #         self.entity.rigid_body.velocity.y = -self.v_speed
+        if keys[pygame.K_w] and keys[pygame.K_d]:
+            self.entity.renderer.sprite = player_image_northeast
+
+        elif keys[pygame.K_w] and keys[pygame.K_a]:
+            self.entity.renderer.sprite = player_image_northwest
+
+        elif keys[pygame.K_s] and keys[pygame.K_d]:
+            self.entity.renderer.sprite = player_image_southeast
+
+        elif keys[pygame.K_s] and keys[pygame.K_a]:
+            self.entity.renderer.sprite = player_image_southwest
+
+    def collision_event(self, other_collider):
+
+        # if the player hit the exit trigger to get out of the maze
+        if other_collider.entity == self.entity.world.exit_object_trigger:
+
+            # player falls into the maze if he comes back
+            self.entity.transform.position.zero()
+
+            # take the player back to the main room
+            self.entity.world.engine.game.go_to_main()
 
 
 class Maze(World):
@@ -151,9 +154,23 @@ class Maze(World):
         self.blocked4 = None
         self.blocked5 = None
         self.blocked6 = None
+        self.blocked7 = None
 
         # static maze walls
         self.new_wall = None
+        # lamp for sprite
+        self.lamp_mask = None
+
+        # if puzzle is complete
+        self.puzzle = False
+
+        # this object signals that the player completed the puzzle and can exit the maze
+        self.exit_object_trigger = None
+
+    def resume(self):
+        mixer.music.load("assets/music/VoiceInMyHead.ogg")
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
     def construct_blocked_walls(self):
         l1c = (12, 4)
@@ -191,6 +208,12 @@ class Maze(World):
         self.blocked6.tag = "blocked6"
         _l6c = find_coordinate(l6c)
         self.blocked6.transform.position = Vector2(_l6c[0], _l6c[1])
+
+        l7c = (-1, 15)
+        self.blocked7 = self.create_game_object(tile)
+        self.blocked7.tag = "blocked7"
+        _l7c = find_coordinate(l7c)
+        self.blocked7.transform.position = Vector2(_l7c[0], _l7c[1])
 
     def construct_off_levers(self):
 
@@ -330,9 +353,102 @@ class Maze(World):
         c1 = find_coordinate(c)
         self.new_wall.transform.position = Vector2(c1[0], c1[1])
 
+    def end_path(self):
+
+        # play the sound the effect to let the player know that the puzzle was completed
+        puzzle_finished_sfx.play()
+
+        self.destroy_entity(self.blocked7)
+        vertical_beam = pygame.image.load("assets/images/tiles/vertical_beam.png").convert_alpha()
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 8))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 9))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 11))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 12))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 13))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((-1, 14))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((8, 8))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((8, 9))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((3, 9))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(vertical_beam)
+        c = find_coordinate((3, 8))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        horizontal_beam = pygame.image.load("assets/images/tiles/horizontal_beam.png").convert_alpha()
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((0, 7))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((1, 7))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((2, 7))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((4, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((5, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((6, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
+        new_wall = self.create_renderable_object(horizontal_beam)
+        c = find_coordinate((7, 10))
+        new_wall.transform.position = Vector2(c[0], c[1])
+
     def load_scene(self):
 
-        PhysicsSystem.gravity.zero()
+        img_width = lamp_light_img.get_width()
+        img_height = lamp_light_img.get_height()
+
+        pivot = Vector2(img_width/2, img_height/2)
+
+        # add necessary components to be able to position and render the background
+        self.lamp_mask = self.create_entity()
+        self.lamp_mask.add_component(Transform(Vector2(0, 0)))
+        self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
+        self.lamp_mask.renderer.depth = -100
+
+        self.get_system(PhysicsSystem.tag).gravity.zero()
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
         background_image = pygame.Surface((w, h))
@@ -408,7 +524,6 @@ class Maze(World):
         floor_9.renderer.depth = 100
 
         # =========================================Create Player====================================
-
         self.player = self.create_game_object(player_image_north)
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(0, 0)
@@ -418,8 +533,13 @@ class Maze(World):
         self.player.collider.restitution = 1
         self.player.collider.set_box(30, 30)
 
+        # ==================================== Trigger Exit Object ===============================
+        self.exit_object_trigger = self.create_box_collider_object(500, 200)
+        self.exit_object_trigger.transform.position = Vector2(0, 1650)
+        self.exit_object_trigger.collider.is_trigger = True
+
         # =============================================Static Maze Tiles==========================
-        coordinates = []
+        coordinates = list()
         coordinates.append((0, 1))  # 1
         coordinates.append((0, 2))  # 2
         coordinates.append((0, 3))  # 3
@@ -706,7 +826,7 @@ class Maze(World):
         coordinates.append((33, 9))
         coordinates.append((34, 9))
         coordinates.append((35, 9))
-        # coordinates.append((-1, 1))
+        coordinates.append((-1, 1))
 
         # =========================================Perimeter=======================================
 
@@ -714,7 +834,7 @@ class Maze(World):
         for i in range(-1, 42):
             coordinates.append((i, -2))
         # bottom perimeter
-        for i in range(-1, 42):
+        for i in range(0, 42):
             coordinates.append((i, 15))
         # left perimeter wall
         for i in range(-2, 16):
@@ -744,6 +864,11 @@ class Maze(World):
 
         # create blocked path walls
         self.construct_blocked_walls()
+        self.add_script(LightFollow())
+
+        # start the background music and set it to loop forever
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
 
 class PlayerBehavior (BehaviorScript):
@@ -755,10 +880,11 @@ class PlayerBehavior (BehaviorScript):
         self.touched_lever4 = False
         self.touched_lever5 = False
         self.touched_lever6 = False
+        self.touched_lever7 = False
 
     def collision_event(self, other_collider):
         other_entity = other_collider.entity
-        # hits lever 1-6
+        # hits lever 1-7
         if other_entity.tag == "lever1_off":
             # print "You hit lever 1!"
             self.touched_lever1 = True
@@ -785,21 +911,50 @@ class PlayerBehavior (BehaviorScript):
             self.entity.world.destroy_entity(other_entity)
         elif other_entity.tag == "lever7_off":
             # print "You hit lever 7!"
-            self.touched_lever6 = True
-            self.entity.world.destroy_entity(other_entity)
+            self.entity.world.end_path()
+            self.touched_lever7 = True
 
         if other_entity.tag == "blocked1" and self.touched_lever1 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked2" and self.touched_lever2 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked3" and self.touched_lever3 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked4" and self.touched_lever4 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked5" and self.touched_lever5 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
         elif other_entity.tag == "blocked6" and self.touched_lever6 is True:
             self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
+        elif other_entity.tag == "blocked7" and self.touched_lever7 is True:
+            self.entity.world.destroy_entity(other_entity)
+            block_removed.play()
+            self.entity.world.puzzle = True
+            if self.entity.world.puzzle is True:
+                print "puzzle is complete"
+            else:
+                print "puzzle is not complete"
 
-engine.set_world(Maze())
-engine.run()
+        if other_entity.tag == "blocked1" and self.touched_lever1 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked2" and self.touched_lever2 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked3" and self.touched_lever3 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked4" and self.touched_lever4 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked5" and self.touched_lever5 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked6" and self.touched_lever6 is False:
+            blocked_wall.play()
+        elif other_entity.tag == "blocked7" and self.touched_lever6 is False:
+            blocked_wall.play()
+#
+# engine.set_world(Maze())
+# engine.run()

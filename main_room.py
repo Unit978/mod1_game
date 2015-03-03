@@ -8,8 +8,143 @@ from state_machine import *
 
 engine = Engine(1200, 700)
 
-# load music to play in the background
-background_music = mixer.music.load("assets/music/MarysCreepyCarnivalTheme.mp3")
+monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
+
+
+class BookShelfInteraction(BehaviorScript):
+
+    def __init__(self):
+        super(BookShelfInteraction, self).__init__("book shelf interaction")
+
+        self.showing_hint = False
+
+    def update(self):
+        pass
+
+    def take_input(self, event):
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            # interacted with book shelve
+            if not self.showing_hint:
+                x_mouse = pygame.mouse.get_pos()[0]
+                y_mouse = pygame.mouse.get_pos()[1]
+
+                mouse_rect = Rect(x_mouse, y_mouse, 5, 5)
+
+                for book_shelf in self.entity.world.book_shelves:
+
+                    # player must be touching book shelf
+                    if PhysicsSystem.box2box_collision(self.entity.collider, book_shelf.collider):
+
+                        # player clicked on book shelf
+                        if mouse_rect.colliderect(book_shelf.collider.box):
+                            self.showing_hint = True
+
+                            self.entity.world.engine.gui.add_widget(self.entity.world.text)
+
+            elif self.showing_hint:
+                self.entity.world.engine.gui.remove_widget(self.entity.world.text)
+                self.showing_hint = False
+
+
+class ExitMainRoom(WorldScript):
+
+    def __init__(self):
+        super(ExitMainRoom, self).__init__("exit main room")
+
+        self.puzzles_done = False
+
+    def update(self):
+
+        # check to see of the puzzles are finished
+        if not self.puzzles_done:
+            self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.main_room.puzzle
+
+        # elevator hasnt been triggered yet
+        elevator_cabin = self.world.get_entity_by_tag("cabin")
+        if self.puzzles_done and elevator_cabin.collider.is_trigger:
+            elevator_cabin = self.world.get_entity_by_tag("cabin")
+
+            # on the elevator cabin
+            if PhysicsSystem.box2box_collision(self.world.player.collider, elevator_cabin.collider):
+                monster_appearance_sfx.play()
+                elevator_cabin.collider.is_trigger = False
+                elevator_cabin.collider.treat_as_dynamic = True
+
+
+class MoveCabin(BehaviorScript):
+
+    def __init__(self):
+        super(MoveCabin, self).__init__("move cabin")
+        self.speed = 30
+
+        # ten seconds going up the elevator
+        self.timer_to_end = 10.0
+
+    def update(self):
+
+        # move up if activated
+        if not self.entity.collider.is_trigger:
+            self.entity.transform.position.y -= self.speed * self.entity.world.engine.delta_time
+            self.timer_to_end -= self.entity.world.engine.delta_time
+
+        if self.timer_to_end < 0:
+            self.entity.world.engine.game.go_to_end()
+
+
+class MonsterMovement(BehaviorScript):
+
+    def __init__(self):
+        super(MonsterMovement, self).__init__("monster movement")
+        self.speed = 260
+        self.velocity = Vector2(0, 0)
+
+        self.killed_player = False
+
+    def update(self):
+
+        player = self.entity.world.player
+
+        direction = player.transform.position - self.entity.transform.position
+        direction.normalize()
+
+        self.velocity = direction * self.speed
+
+        dt = self.entity.world.engine.delta_time
+
+        self.entity.transform.position += self.velocity * dt
+
+        # make the lamp follow the monster
+        self.entity.world.monster_light.transform.position = self.entity.transform.position
+
+    def take_input(self, event):
+
+        # restart the game if the player died
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r:
+                if self.killed_player:
+                    self.entity.world.engine.game.start()
+
+    def collision_event(self, other_collider):
+
+        # hit the player - player dies
+        if other_collider.entity.name == "player":
+
+            player = self.entity.world.player
+
+            if not self.killed_player:
+                # disable all player functionality
+                player.disabled = True
+
+                # display a red cross over the player to signify that he is dead
+                img = pygame.image.load("assets/images/effects/blood_splatter.png").convert_alpha()
+                cross = self.entity.world.create_renderable_object(img)
+                cross.renderer.is_static = True
+                cross.renderer.depth = -100
+                cross.transform.position.x = self.entity.transform.position.x
+                cross.transform.position.y = self.entity.transform.position.y
+                self.killed_player = True
 
 
 class UpdateAnimationHandler(WorldScript):
@@ -21,10 +156,141 @@ class UpdateAnimationHandler(WorldScript):
     def update(self):
         self.anim_state_machine.update()
 
-        # make the lamp mask follow the player
-        self.world.lamp_mask.transform.position = self.world.player.transform.position
+        # make the lamp source follow the player
+        self.world.lamp_source.transform.position = self.world.player.transform.position
 
-        #self.world.light_mask.transform.position = self.world.player.transform.position
+
+class TeleportCrate(BehaviorScript):
+
+    def __init__(self):
+        super(TeleportCrate, self).__init__("teleport crate")
+
+    # if the crate collides with a teleporter, spawn them from the ceilings at certain points
+    def collision_event(self, other_collider):
+
+        if other_collider.entity.name == "teleport b":
+            self.entity.transform.position = Vector2(540, -300)
+
+        elif other_collider.entity.name == "teleport a":
+            self.entity.transform.position = Vector2(1800, -300)
+
+
+class DeactivateSaw(BehaviorScript):
+
+    def __init__(self):
+        super(DeactivateSaw, self).__init__("deactivate saw")
+
+    def collision_event(self, other_collider):
+
+        if other_collider.entity.tag == "saw switch":
+
+            new_switch_image = pygame.image.load("assets/images/tiles/56x100_switchON.png").convert()
+
+            other_collider.entity.renderer.set_image(new_switch_image)
+
+            # get the saw
+            saw = self.entity.world.get_entity_by_tag("saw")
+
+            saw.collider.is_trigger = True
+            saw.remove_component(Animator.tag)
+
+
+# This will handle the dimming of lamp light and regeneration of lamp light from the other lamps
+class HandleLightLife(BehaviorScript):
+
+    def __init__(self):
+        super(HandleLightLife, self).__init__("handle light life")
+
+        self.max_lamp_life = 180.0
+        self.max_time_monster = 8.0
+
+        # lamp light life in seconds
+        self.lamp_life = self.max_lamp_life
+
+        # 10 secs are given so player can refuel lamp
+        self.monster_appearance_timer = self.max_time_monster
+
+        self.monster_spawned = False
+
+    def update(self):
+
+        # reduce lamp strength at every mutliple of 5
+        if self.lamp_life > 0 and int(self.lamp_life) % 5 == 0:
+            scale = self.lamp_life / self.max_lamp_life
+            self.entity.world.lamp_source.transform.scale_by(scale, scale)
+
+        # spawn monster
+        if self.monster_appearance_timer < 0 and not self.monster_spawned:
+            monster_appearance_sfx.play()
+            self.entity.world.initialize_monster()
+            self.monster_spawned = True
+
+        # start secondary timer for monster to appear
+        if self.lamp_life < 0 < self.monster_appearance_timer:
+            self.monster_appearance_timer -= self.entity.world.engine.delta_time
+
+        # reduce lamp life
+        if self.lamp_life > 0:
+            self.lamp_life -= self.entity.world.engine.delta_time
+
+    def take_input(self, event):
+
+        # if the player wants to take a light
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_q:
+
+                # make sure we are colliding with a light source
+                for lamp_light in self.entity.world.lamp_lights:
+
+                    # player is in range of a lamp light
+                    if PhysicsSystem.box2box_collision(self.entity.collider, lamp_light.collider):
+
+                        # reset lamp life and monster appearance timer
+                        self.lamp_life = self.max_lamp_life
+                        self.monster_appearance_timer = self.max_time_monster
+
+                        # disable monster
+                        if self.monster_spawned:
+                            self.entity.world.disable_monster()
+
+                        # set lamp source back to max capacity
+                        self.entity.world.lamp_source.transform.scale_by(1, 1)
+
+                        # destroy the lamp light that you obtained fuel from
+                        self.entity.world.destroy_entity(lamp_light)
+
+                        # remove from lamp lights list
+                        self.entity.world.lamp_lights.remove(lamp_light)
+
+                        # remove it from the renderer
+                        self.entity.world.get_system(RenderSystem.tag).light_sources.remove(lamp_light)
+
+                        self.monster_spawned = False
+                        return
+
+
+class GoToOtherLevel(BehaviorScript):
+
+    def __init__(self):
+        super(GoToOtherLevel, self).__init__("go to other level")
+
+    def collision_event(self, other_collider):
+
+        if other_collider.entity.name == "trigger to maze":
+
+            # player will be falling down once he comes back from the maze
+            self.entity.rigid_body.velocity.zero()
+            self.entity.transform.position = Vector2(1100, -320)
+
+            self.entity.world.engine.game.go_to_maze()
+
+        elif other_collider.entity.name == "trigger to fib":
+
+            # shift back the player a bit
+            self.entity.transform.position.x -= (self.entity.collider.box.w/2 + 10)
+            self.entity.rigid_body.velocity.zero()
+
+            self.entity.world.engine.game.go_to_fib()
 
 
 class PlatformWorld(World):
@@ -36,12 +302,29 @@ class PlatformWorld(World):
         self.player_anim_handler = None
 
         self.ladders = list()
+        self.lamp_source = None
+        self.crates = list()
 
-        self.lamp_mask = None
+        self.monster = None
+        self.monster_light = None
 
-        self.light_mask = None
+        self.lamp_lights = list()
+
+        self.book_shelves = list()
+
+        self.text = None
+
+    def resume(self):
+        # load music to play in the background
+        mixer.music.load("assets/music/MarysCreepyCarnivalTheme.ogg")
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.3)
 
     def load_scene(self):
+
+        img = pygame.image.load("assets/images/gui/hint.png").convert()
+        self.text = self.engine.gui.Widget(img, Vector2(0, 0))
+
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
         self.origin = Vector2(0, -450)
@@ -50,48 +333,22 @@ class PlatformWorld(World):
         self.width = 4600
         self.height = 1100
 
-        # load the light emission masks
-        # files = get_files_in_dir("assets/images/lamp_light_masks/light_emissions/")
-        #
-        # temp_surface = pygame.Surface((500, 500)).convert()
-        #
-        # for f in files:
-        #     img = pygame.image.load(f).convert_alpha()
-        #
-        #     temp_surface.blit(img, (0, 0))
-        #
-        # temp_surface.set_alpha(200)
-        # img_width = temp_surface.get_width()
-        # img_height = temp_surface.get_height()
-        # pivot = Vector2(img_width/2.0, img_height/2.0)
-        # self.light_mask = self.create_entity()
-        # self.light_mask.add_component(Transform(Vector2(0, 0)))
-        # self.light_mask.add_component(Renderer(temp_surface, pivot))
+        # setup the render system for a dark environment
+        self.get_system(RenderSystem.tag).simulate_dark_env = True
+        self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h)).convert()
 
-        background_image = pygame.Surface((w, h))
-        background_image.convert()
-        background_image.fill((12, 0, 40))
+        # triggers to the other worlds
+        trigger_to_maze = self.create_box_collider_object(200, 200)
+        trigger_to_maze.collider.is_trigger = True
+        trigger_to_maze.transform.position = Vector2(-90, 70)
+        trigger_to_maze.name = "trigger to maze"
 
-        # add necessary components to be able to position and render the background
-        background = self.create_entity()
-        background.add_component(Transform(Vector2(0, 0)))
-        background.add_component(Renderer(background_image))
-        background.renderer.depth = 100
-        background.renderer.is_static = True
+        trigger_to_fib = self.create_box_collider_object(200, 200)
+        trigger_to_fib.collider.is_trigger = True
+        trigger_to_fib.transform.position = Vector2(4700, 370)
+        trigger_to_fib.name = "trigger to fib"
 
-        lamp_light_img = pygame.image.load("assets/images/lamp_light_masks/lamp_light.png").convert_alpha()
-
-        img_width = lamp_light_img.get_width()
-        img_height = lamp_light_img.get_height()
-
-        pivot = Vector2(img_width/2, img_height/2)
-
-        # add necessary components to be able to position and render the background
-        self.lamp_mask = self.create_entity()
-        self.lamp_mask.add_component(Transform(Vector2(0, 0)))
-        self.lamp_mask.add_component(Renderer(lamp_light_img, pivot))
-        self.lamp_mask.renderer.depth = -100
-
+        self.load_backgrounds()
         self.load_player()
         self.load_ladders()
         self.load_floors()
@@ -100,6 +357,14 @@ class PlatformWorld(World):
         self.load_platforms()
         self.load_elevators()
         self.load_boxes()
+        self.load_lights()
+        self.load_book_shelves()
+        self.load_saw()
+
+        # set up the foundation for the monster
+        self.monster = self.create_entity()
+        self.monster.add_component(Transform())
+        self.monster.tag = "monster"
 
         # set up camera
         render = self.get_system(RenderSystem.tag)
@@ -111,9 +376,184 @@ class PlatformWorld(World):
         mixer.music.play(-1)
         mixer.music.set_volume(0.3)
 
-        PhysicsSystem.gravity.y += 200
+        self.get_system(PhysicsSystem.tag).gravity.y += 200
 
         self.add_script(UpdateAnimationHandler(self.player_anim_handler))
+
+        # get all the lamp lights
+        for e in self.entity_manager.entities:
+            if e.tag == "lamp light":
+                self.lamp_lights.append(e)
+
+            elif e.tag == "book shelf":
+                self.book_shelves.append(e)
+
+        self.add_script(ExitMainRoom())
+
+    def load_lights(self):
+
+        render_sys = self.get_system(RenderSystem.tag)
+
+        # a light source to see the monster
+        lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_xsmall_mask.png").convert_alpha()
+        self.monster_light = self.create_renderable_object(lamp_light_img)
+        self.monster_light.renderer.depth = 10000
+
+        large_lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_mask.png").convert_alpha()
+        self.lamp_source = self.create_renderable_object(large_lamp_light_img)
+        self.lamp_source.renderer.depth = 10000
+        render_sys.light_sources.append(self.lamp_source)
+
+        lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_small_mask.png").convert_alpha()
+        lamp_img = pygame.image.load("assets/images/environment/lamp.png").convert_alpha()
+
+        # LAMP AT WALL A
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(185, 80)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(185, 80)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # LAMP AT PLATFORM B
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(600, 415)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(600, 415)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # LAMP AT PLATFORM F
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(2000, -20)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(2000, -20)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # OVER SAW
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(2800, 200)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(2800, 200)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # At right end of the level
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(4550, 380)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(4550, 380)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+    def load_saw(self):
+
+        img = pygame.image.load("assets/images/environment/hazards/saw.png").convert_alpha()
+        saw = self.create_game_object(img)
+        saw.transform.scale_by(0.75, 0.75)
+        saw.renderer.depth = 70
+        saw.transform.position = Vector2(3200, 480)
+        saw.tag = "saw"
+
+        animator = Animator()
+        saw.add_component(animator)
+
+        anim = Animator.Animation()
+        anim.frame_latency = 0.01
+
+        # create multiple rotating frames for the saw
+        for degree in range(0, 360, 360/15):
+
+            #obtain original dimensions
+            #original_rect = img.get_rect()
+            original_rect = saw.renderer.sprite.get_rect()
+            rotated_surface = pygame.transform.rotate(saw.renderer.sprite, degree)
+
+            #adjust new surface's center with the original's
+            rotate_rect = original_rect.copy()
+            rotate_rect.center = rotated_surface.get_rect().center
+
+            rotated_surface = rotated_surface.subsurface(rotate_rect).copy()
+
+            anim.add_frame(rotated_surface)
+
+        animator.set_animation(anim)
+
+        img = pygame.image.load("assets/images/tiles/56x100_switchOFF.png").convert()
+
+        # add the switch to deactivate lever
+        switch = self.create_game_object(img)
+        switch.collider.is_trigger = True
+        switch.transform.position = Vector2(2050, -120)
+        switch.renderer.depth = 70
+        switch.tag = "saw switch"
+
+    def load_book_shelves(self):
+
+        img = pygame.image.load("assets/images/environment/bookcase.png").convert()
+        w = img.get_width()
+        h = img.get_height()
+        pivot = Vector2(w/2, h/2)
+
+        book = self.create_box_collider_object(w, h)
+        book.add_component(Renderer(img, pivot))
+        book.transform.position = Vector2(400, 500)
+        book.tag = "book shelf"
+
+        book.collider.is_trigger = True
+        book.renderer.depth = 70
+
+        book = self.create_box_collider_object(w, h)
+        book.add_component(Renderer(img, pivot))
+        book.transform.position = Vector2(4350, 0)
+
+        book.collider.is_trigger = True
+        book.renderer.depth = 70
+        book.tag = "book shelf"
+
+    def load_backgrounds(self):
+
+        # load a plain black background that goes with the camera
+        w = self.engine.display.get_width()
+        h = self.engine.display.get_height()
+        background_image = pygame.Surface((w, h))
+        background_image.convert()
+        background_image.fill((0, 0, 0))
+
+        background = self.create_entity()
+        background.add_component(Transform(Vector2(0, 0)))
+        background.add_component(Renderer(background_image))
+        background.renderer.depth = 110
+        background.renderer.is_static = True
+
+        path = "assets/images/backgrounds/"
+        img = pygame.image.load(path + "eye_duck.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+        background.transform.position = Vector2(200, -300)
+
+        img = pygame.image.load(path + "horse.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+
+        x = 2600
+        background.transform.position = Vector2(x, -300)
+
+        w = img.get_width()
+        img = pygame.image.load(path + "all_toys.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+        background.transform.position = Vector2(x + w, -300)
+
+        img = pygame.image.load(path + "no_toys.png").convert_alpha()
+        background = self.create_renderable_object(img)
+        background.renderer.pivot = Vector2(0, 0)
+        background.renderer.depth = 100
+        background.transform.position = Vector2(1300, -300)
 
     def load_ladders(self):
         path = "assets/images/ladders/"
@@ -137,16 +577,16 @@ class PlatformWorld(World):
         img_400x30 = load(path + "30x400.png").convert_alpha()
         img_250x50 = load(path + "50x250.png").convert_alpha()
         img_400x120 = load(path + "120x400.png").convert_alpha()
-        img_300x30 = load(path + "30x300.png").convert_alpha()
+        # img_300x30 = load(path + "30x300.png").convert_alpha()
         img_800x150 = load(path + "150x800.png").convert_alpha()
         img_300x50 = load(path + "50x300.png").convert_alpha()
 
         plat_a = self.create_game_object(img_200x30)
-        plat_a.transform.position = Vector2(300, 250)
+        plat_a.transform.position = Vector2(300, 250+50)
         set_platform_attributes(plat_a)
 
         plat_b = self.create_game_object(img_400x30)
-        plat_b.transform.position = Vector2(400, 400)
+        plat_b.transform.position = Vector2(450, 400+50)
         set_platform_attributes(plat_b)
 
         shift = 200
@@ -167,13 +607,13 @@ class PlatformWorld(World):
         set_platform_attributes(plat_f)
 
         plat_g = self.create_game_object(img_200x30)
-        plat_g.transform.position = Vector2(2250-shift-100, 0)
+        plat_g.transform.position = Vector2(2250-shift-50, -50)
         set_platform_attributes(plat_g)
 
-        plat_h = self.create_game_object(img_300x30)
-        plat_h.transform.position = Vector2(1800, -150)
-        set_platform_attributes(plat_h)
-        plat_h.add_script(PlatformMovement("plat move"))
+        # plat_h = self.create_game_object(img_300x30)
+        # plat_h.transform.position = Vector2(1800, -150)
+        # set_platform_attributes(plat_h)
+        # plat_h.add_script(PlatformMovement("plat move"))
 
         plat_i = self.create_game_object(img_800x150)
         plat_i.transform.position = Vector2(3150, 300)
@@ -219,7 +659,7 @@ class PlatformWorld(World):
         w = self.engine.display.get_width()
         h = self.engine.display.get_height()
 
-        floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert()
+        floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert_alpha()
 
         img = create_img_from_tile(floor_tile, w*2, 200)
         floor_a = self.create_game_object(img)
@@ -242,18 +682,22 @@ class PlatformWorld(World):
         ceil_color = (50, 50, 50)
 
         w = self.engine.display.get_width()
+        floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert_alpha()
 
-        img = RenderSystem.create_solid_image(w*2, 200, ceil_color)
+        img = create_img_from_tile(floor_tile, w*2, 200)
+        img = pygame.transform.flip(img, False, True)
         ceil_a = self.create_game_object(img)
         ceil_a.transform.position = Vector2(w, -470)
         set_ceiling_attributes(ceil_a)
 
-        img = RenderSystem.create_solid_image(1200, 400, ceil_color)
+        img = create_img_from_tile(floor_tile, 1200, 400)
+        img = pygame.transform.flip(img, False, True)
         ceil_b = self.create_game_object(img)
         ceil_b.transform.position = Vector2(w*2 + 500, -350)
         set_ceiling_attributes(ceil_b)
 
-        img = RenderSystem.create_solid_image(1150, 200, ceil_color)
+        img = create_img_from_tile(floor_tile, 1150, 200)
+        img = pygame.transform.flip(img, False, True)
         ceil_c = self.create_game_object(img)
         ceil_c.transform.position = Vector2(w*2 + 1650, -470)
         set_ceiling_attributes(ceil_c)
@@ -268,6 +712,8 @@ class PlatformWorld(World):
         self.player = self.create_game_object(starting_image)
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(230, 580)
+        #self.player.transform.position = Vector2(4330, 580)
+        #self.player.transform.position = Vector2(100, 80)
         self.player.transform.scale = Vector2(1, 1)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 2
@@ -279,6 +725,10 @@ class PlatformWorld(World):
 
         self.player.add_script(PlayerClimbing("player climb"))
         self.player.add_script(PlayerPlatformMovement("player plat move"))
+        self.player.add_script(DeactivateSaw())
+        self.player.add_script(HandleLightLife())
+        self.player.add_script(GoToOtherLevel())
+        self.player.add_script(BookShelfInteraction())
 
         # add animator to player from the animation state machine
         self.player.add_component(self.player_anim_handler.animator)
@@ -311,32 +761,69 @@ class PlatformWorld(World):
             platform.add_script(ElevatorPlatMovement(spawn_point, "elev move"))
             platform.collider.treat_as_dynamic = True
 
+        # objects to detect crates
+        teleport_a = self.create_box_collider_object(200, 200)
+        teleport_a.collider.is_trigger = True
+        teleport_a.transform.position = Vector2(2475, -280)
+        teleport_a.name = "teleport a"
+
+        teleport_b = self.create_box_collider_object(200, 200)
+        teleport_b.collider.is_trigger = True
+        teleport_b.transform.position = Vector2(3650, -490)
+        teleport_b.name = "teleport b"
+
         # the elevator shaft
-        # path = "assets/images/environment/elevator/"
-        #
-        # elev_shaft_img = pygame.image.load(path + "elevator_shaft.png").convert_alpha()
-        # elevator_shaft = self.create_entity()
-        # elevator_shaft.add_component(Transform(Vector2(1100, -375)))
-        # elevator_shaft.add_component(Renderer(elev_shaft_img))
-        # elevator_shaft.renderer.depth = 50
-        #
-        # elevator_cabin_img = pygame.image.load(path + "elevator.png").convert_alpha()
-        # elevator_cabin = self.create_entity()
-        # elevator_cabin.add_component(Transform(Vector2(1150, 600 - elevator_cabin_img.get_height())))
-        # elevator_cabin.add_component(Renderer(elevator_cabin_img))
-        # elevator_cabin.renderer.depth = 40
+        path = "assets/images/environment/elevator/"
+
+        elev_shaft_img = pygame.image.load(path + "elevator_shaft.png").convert_alpha()
+        elevator_shaft = self.create_renderable_object(elev_shaft_img)
+
+        y = elev_shaft_img.get_width()-150
+
+        elevator_shaft.add_component(Transform(Vector2(1100, y)))
+        elevator_shaft.renderer.depth = 50
+
+        elevator_cabin_img = pygame.image.load(path + "extended_elevator.png").convert_alpha()
+        elevator_cabin = self.create_renderable_object(elevator_cabin_img)
+        elevator_cabin.add_component(Transform(Vector2(1100, y + elevator_cabin_img.get_height() + 100)))
+        elevator_cabin.renderer.depth = 40
+
+        # place dormant collider on the bottom of the elevator shaft
+        elevator_cabin.add_component(BoxCollider(140, 20))
+        elevator_cabin.collider.is_trigger = True
+        elevator_cabin.collider.surface_friction = 0.75
+        elevator_cabin.tag = "cabin"
+
+        elevator_cabin.add_script(MoveCabin())
 
     def load_boxes(self):
         box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
-
         box = self.create_game_object(box_img)
-        box.transform.position = Vector2(900, 300)
+        box.transform.position = Vector2(900, 560)
         set_box_attributes(box)
+        box.add_script(TeleportCrate())
+        self.crates.append(box)
 
         box_img = pygame.image.load("assets/images/crates/gold_blue.png").convert_alpha()
         box = self.create_game_object(box_img)
-        box.transform.position = Vector2(500, 300)
+        box.transform.position = Vector2(540, 400)
         set_box_attributes(box)
+        box.add_script(TeleportCrate())
+        self.crates.append(box)
+
+        box_img = pygame.image.load("assets/images/crates/blue_green.png").convert_alpha()
+        box = self.create_game_object(box_img)
+        box.transform.position = Vector2(1300, -320)
+        set_box_attributes(box)
+        box.add_script(TeleportCrate())
+        self.crates.append(box)
+
+        box_img = pygame.image.load("assets/images/crates/blue_red.png").convert_alpha()
+        box = self.create_game_object(box_img)
+        box.transform.position = Vector2(2475, 300)
+        set_box_attributes(box)
+        box.add_script(TeleportCrate())
+        self.crates.append(box)
 
     def load_anims(self):
 
@@ -356,7 +843,7 @@ class PlatformWorld(World):
 
         # setup the walk animation
         anim = load_anim_from_directory(path_to_anims + "Walking/")
-        anim.frame_latency = 0.1
+        anim.frame_latency = 0.085
         state = AnimationStateMachine.AnimationState("walking", anim)
         self.player_anim_handler.add_state(state)
 
@@ -430,7 +917,39 @@ class PlatformWorld(World):
 
         self.ladders.append(ladder)
 
+    def initialize_monster(self):
 
-engine.set_world(PlatformWorld())
-engine.run()
+        render_sys = self.get_system(RenderSystem.tag)
 
+        img = pygame.image.load("assets/images/environment/hazards/monster.png").convert_alpha()
+        w = img.get_width()
+        h = img.get_height()
+        pivot = Vector2(w/2, h/2)
+
+        self.monster.add_component(Renderer(img, pivot))
+        self.monster.add_component(BoxCollider(50, 50))
+        self.monster.add_script(MonsterMovement())
+        self.monster.collider.is_trigger = True
+        self.monster.renderer.depth = -10
+
+        # insert to scene
+        render_sys.dynamic_insertion_to_scene(self.monster)
+        render_sys.light_sources.append(self.monster_light)
+
+    # Make the monster invisible and unable to interact with
+    def disable_monster(self):
+        # remove from the render system
+        #render_sys = self.get_system(RenderSystem.tag)
+        self.get_system(RenderSystem.tag).remove_from_scene(self.monster)
+        self.get_system(RenderSystem.tag).remove_from_scene(self.monster_light)
+        self.get_system(RenderSystem.tag).light_sources.remove(self.monster_light)
+
+        self.monster.remove_component(Renderer.tag)
+        self.monster.remove_component(BoxCollider.tag)
+        self.monster.remove_script("monster movement")
+
+
+
+# engine.set_world(PlatformWorld())
+# engine.run()
+#
