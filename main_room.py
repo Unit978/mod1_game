@@ -11,6 +11,51 @@ engine = Engine(1200, 700)
 monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
 
 
+class ExitMainRoom(WorldScript):
+
+    def __init__(self):
+        super(ExitMainRoom, self).__init__("exit main room")
+
+        self.puzzles_done = False
+
+    def update(self):
+
+        # check to see of the puzzles are finished
+        if not self.puzzles_done:
+            self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.main_room.puzzle
+
+        # elevator hasnt been triggered yet
+        elevator_cabin = self.world.get_entity_by_tag("cabin")
+        if self.puzzles_done and elevator_cabin.collider.is_trigger:
+            elevator_cabin = self.world.get_entity_by_tag("cabin")
+
+            # on the elevator cabin
+            if PhysicsSystem.box2box_collision(self.world.player.collider, elevator_cabin.collider):
+                monster_appearance_sfx.play()
+                elevator_cabin.collider.is_trigger = False
+                elevator_cabin.collider.treat_as_dynamic = True
+
+
+class MoveCabin(BehaviorScript):
+
+    def __init__(self):
+        super(MoveCabin, self).__init__("move cabin")
+        self.speed = 30
+
+        # ten seconds going up the elevator
+        self.timer_to_end = 10.0
+
+    def update(self):
+
+        # move up if activated
+        if not self.entity.collider.is_trigger:
+            self.entity.transform.position.y -= self.speed * self.entity.world.engine.delta_time
+            self.timer_to_end -= self.entity.world.engine.delta_time
+
+        if self.timer_to_end < 0:
+            self.entity.world.engine.game.go_to_end()
+
+
 class MonsterMovement(BehaviorScript):
 
     def __init__(self):
@@ -295,6 +340,8 @@ class PlatformWorld(World):
         for e in self.entity_manager.entities:
             if e.tag == "lamp light":
                 self.lamp_lights.append(e)
+
+        self.add_script(ExitMainRoom())
 
     def load_lights(self):
 
@@ -617,7 +664,7 @@ class PlatformWorld(World):
         self.player.add_component(RigidBody())
         self.player.transform.position = Vector2(230, 580)
         #self.player.transform.position = Vector2(4330, 580)
-        self.player.transform.position = Vector2(100, 80)
+        #self.player.transform.position = Vector2(100, 80)
         self.player.transform.scale = Vector2(1, 1)
         self.player.renderer.depth = -10
         self.player.rigid_body.gravity_scale = 2
@@ -679,16 +726,25 @@ class PlatformWorld(World):
         path = "assets/images/environment/elevator/"
 
         elev_shaft_img = pygame.image.load(path + "elevator_shaft.png").convert_alpha()
-        elevator_shaft = self.create_entity()
-        elevator_shaft.add_component(Transform(Vector2(1100, -375)))
-        elevator_shaft.add_component(Renderer(elev_shaft_img))
+        elevator_shaft = self.create_renderable_object(elev_shaft_img)
+
+        y = elev_shaft_img.get_width()-150
+
+        elevator_shaft.add_component(Transform(Vector2(1100, y)))
         elevator_shaft.renderer.depth = 50
 
-        elevator_cabin_img = pygame.image.load(path + "elevator.png").convert_alpha()
-        elevator_cabin = self.create_entity()
-        elevator_cabin.add_component(Transform(Vector2(1150, 600 - elevator_cabin_img.get_height())))
-        elevator_cabin.add_component(Renderer(elevator_cabin_img))
+        elevator_cabin_img = pygame.image.load(path + "extended_elevator.png").convert_alpha()
+        elevator_cabin = self.create_renderable_object(elevator_cabin_img)
+        elevator_cabin.add_component(Transform(Vector2(1100, y + elevator_cabin_img.get_height() + 100)))
         elevator_cabin.renderer.depth = 40
+
+        # place dormant collider on the bottom of the elevator shaft
+        elevator_cabin.add_component(BoxCollider(140, 20))
+        elevator_cabin.collider.is_trigger = True
+        elevator_cabin.collider.surface_friction = 0.75
+        elevator_cabin.tag = "cabin"
+
+        elevator_cabin.add_script(MoveCabin())
 
     def load_boxes(self):
         box_img = pygame.image.load("assets/images/crates/red_green.png").convert_alpha()
