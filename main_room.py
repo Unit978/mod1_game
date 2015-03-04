@@ -6,7 +6,7 @@ from scripts import *
 from utility import *
 from state_machine import *
 
-engine = Engine(1200, 700)
+Engine(10, 10)
 
 monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
 
@@ -201,7 +201,7 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 220.0
+        self.max_lamp_life = 200.0
         self.max_time_monster = 8.0
 
         # lamp light life in seconds
@@ -466,7 +466,6 @@ class PlatformWorld(World):
         for degree in range(0, 360, 360/15):
 
             #obtain original dimensions
-            #original_rect = img.get_rect()
             original_rect = saw.renderer.sprite.get_rect()
             rotated_surface = pygame.transform.rotate(saw.renderer.sprite, degree)
 
@@ -843,7 +842,7 @@ class PlatformWorld(World):
 
         # setup the walk animation
         anim = load_anim_from_directory(path_to_anims + "Walking/")
-        anim.frame_latency = 0.085
+        anim.frame_latency = 0.083
         state = AnimationStateMachine.AnimationState("walking", anim)
         self.player_anim_handler.add_state(state)
 
@@ -939,15 +938,14 @@ class PlatformWorld(World):
     # Make the monster invisible and unable to interact with
     def disable_monster(self):
         # remove from the render system
-        #render_sys = self.get_system(RenderSystem.tag)
-        self.get_system(RenderSystem.tag).remove_from_scene(self.monster)
-        self.get_system(RenderSystem.tag).remove_from_scene(self.monster_light)
-        self.get_system(RenderSystem.tag).light_sources.remove(self.monster_light)
+        render_sys = self.get_system(RenderSystem.tag)
+        render_sys.remove_from_scene(self.monster)
+        render_sys.remove_from_scene(self.monster_light)
+        render_sys.light_sources.remove(self.monster_light)
 
         self.monster.remove_component(Renderer.tag)
         self.monster.remove_component(BoxCollider.tag)
         self.monster.remove_script("monster movement")
-
 
 
 # engine.set_world(PlatformWorld())

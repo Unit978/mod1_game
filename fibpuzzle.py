@@ -5,7 +5,7 @@ from components import BehaviorScript
 from components import WorldScript
 from copy import copy
 
-engine = Engine(1200, 700)
+Engine(10, 10)
 
 # sound effect to play once the puzzle is completed
 puzzle_finished_sfx = mixer.Sound("assets/sound/piano_low_key.wav")

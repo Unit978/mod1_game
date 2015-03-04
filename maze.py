@@ -4,7 +4,7 @@ from engine import *
 from components import BehaviorScript
 from scripts import CameraFollow
 
-engine = Engine(1200, 700)
+Engine(10, 10)
 
 scale_x = 56  # original 56
 scale_y = 100  # original 100

@@ -111,7 +111,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
     def __init__(self, script_name):
         super(PlayerPlatformMovement, self).__init__(script_name)
-        self.h_speed = 240
+        self.h_speed = 250
         self.v_speed = 350
         self.moving = False
 
