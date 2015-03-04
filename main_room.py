@@ -409,10 +409,10 @@ class PlatformWorld(World):
 
         # LAMP AT WALL A
         lamp = self.create_renderable_object(lamp_img)
-        lamp.transform.position = Vector2(185, 80)
+        lamp.transform.position = Vector2(185, 160)
 
         lamp_light = self.create_renderable_object(lamp_light_img)
-        lamp_light.transform.position = Vector2(185, 80)
+        lamp_light.transform.position = Vector2(185, 160)
         set_lamp_light_attributes(lamp_light, render_sys)
 
         # LAMP AT PLATFORM B
