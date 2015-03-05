@@ -244,27 +244,13 @@ class PlayerPlatformMovement(BehaviorScript):
 
                     player = self.entity
 
-                    temp_player_box = copy(player.collider.box)
-                    temp_other_box = copy(other.collider.box)
-
-                    # use the tolerance hit boxes to detect collision
-                    player.collider.box = player.collider.tolerance_hitbox
-                    other.collider.box = other.collider.tolerance_hitbox
-
-                    player.collider.box.center = temp_player_box.center
-                    other.collider.box.center = temp_other_box.center
-
                     # if the player collided with an element considered as ground, then ground the player
-                    if PhysicsSystem.box2box_collision(player.collider, other.collider):
+                    if PhysicsSystem.tolerance_collision(player.collider, other.collider):
 
                         # check orientation of the collision
                         orientation = PhysicsSystem.calc_box_hit_orientation
                         if orientation(player.collider, other.collider) == PhysicsSystem.bottom:
                             self.grounded = True
-
-                    # reset the collider boxes to the original ones
-                    player.collider.box = temp_player_box
-                    other.collider.box = temp_other_box
 
     def check_if_near_crate(self):
 
@@ -294,17 +280,7 @@ class PlayerPlatformMovement(BehaviorScript):
 
             player = self.entity
 
-            temp_player_box = copy(player.collider.box)
-            temp_other_box = copy(crate.collider.box)
-
-            # use the tolerance hit boxes to detect collision
-            player.collider.box = player.collider.tolerance_hitbox
-            crate.collider.box = crate.collider.tolerance_hitbox
-
-            player.collider.box.center = temp_player_box.center
-            crate.collider.box.center = temp_other_box.center
-
-            if PhysicsSystem.box2box_collision(player.collider, crate.collider):
+            if PhysicsSystem.tolerance_collision(player.collider, crate.collider):
 
                 side = PhysicsSystem.calc_box_hit_orientation(player.collider, crate.collider)
 
@@ -329,10 +305,6 @@ class PlayerPlatformMovement(BehaviorScript):
 
                     elif side == PhysicsSystem.left and player.rigid_body.velocity.x < 0:
                         crate.transform.position.x -= shift-20
-
-            # reset the collider boxes to the original ones
-            player.collider.box = temp_player_box
-            crate.collider.box = temp_other_box
 
         return result
 
