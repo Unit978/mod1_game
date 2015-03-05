@@ -221,28 +221,12 @@ class PlayerFibMovement(BehaviorScript):
         return result
 
     def check_if_near_crate(self):
-
         result = (False, None)
 
         # check if the player is near a box
         for crate in self.entity.world.boxes:
-            player = self.entity
-
-            temp_player_box = player.collider.box
-            temp_crate_box = crate.collider.box
-
-            # use the tolerance hit boxes to detect collision
-            player.collider.box = player.collider.tolerance_hitbox
-            crate.collider.box = crate.collider.tolerance_hitbox
-
-            # use the tolerance hit boxes to detect collision
-            if PhysicsSystem.box2box_collision(player.collider, crate.collider):
+            if PhysicsSystem.tolerance_collision(self.entity.collider, crate.collider):
                 result = (True, crate)
-
-            # # reset the collider boxes to the original ones
-            player.collider.box = temp_player_box
-            crate.collider.box = temp_crate_box
-
         return result
 
     def collision_event(self, other_collider):
