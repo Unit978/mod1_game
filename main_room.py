@@ -720,7 +720,7 @@ class PlatformWorld(World):
         #self.player.transform.position = Vector2(100, 80)
         self.player.transform.scale = Vector2(1, 1)
         self.player.renderer.depth = -10
-        self.player.rigid_body.gravity_scale = 2
+        self.player.rigid_body.gravity_scale = 1.0
         self.player.collider.restitution = 0
         self.player.name = "player"
 
