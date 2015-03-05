@@ -1,2 +1,3 @@
 # mod1_game
-A short, simple 2D for a game development class.
+"luminescence"
+A short, simple 2D game for a game development class. This game uses the Nybble Game Engine as a foundation.
