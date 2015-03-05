@@ -256,7 +256,7 @@ class PlayerPlatformMovement(BehaviorScript):
                 # collider exists and is not a trigger
                 valid_collider = entity.collider is not None and not entity.collider.is_trigger
 
-                # dont consider the player or yourself during this collision test
+                # don't consider the player or yourself during this collision test
                 if valid_collider and entity is not self.entity and entity is not crate:
 
                     # collision occurs
@@ -314,12 +314,12 @@ class PlayerClimbing(BehaviorScript):
         keys = pygame.key.get_pressed()
 
         # check if we exited from the ladder collider
-        if not self.colliding_with_ladder():
+        if self.climbing and not self.colliding_with_ladder():
             self.climbing = False
 
             # reset the collider for side scrolling
             xs = self.entity.transform.scale.x
-            self.entity.collider.set_offset(-12*xs, 10)
+            self.entity.collider.set_offset(-12.0*xs, 10.0)
 
         # detect if the player wants to climb the ladder
         if keys[pygame.K_w]:
@@ -356,7 +356,7 @@ class PlayerClimbing(BehaviorScript):
         # we exited from the ladder - set gravity back to normal for the player
         # and un-pause the animator
         else:
-            self.entity.rigid_body.gravity_scale = 1
+            self.entity.rigid_body.gravity_scale = 1.0
             self.entity.animator.pause = False
 
     def collision_event(self, other_collider):
