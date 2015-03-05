@@ -190,19 +190,6 @@ class PlayerPlatformMovement(BehaviorScript):
                     if x_scale < 0:
                         self.entity.transform.scale_by(-x_scale, y_scale)
 
-            if self.entity.get_script("player climb").climbing:
-                # turn left
-                if event.key == pygame.K_a:
-                    # was facing right then make the transform turn right
-                    if x_scale > 0:
-                        self.entity.transform.scale_by(-x_scale, y_scale)
-
-                # turn right
-                elif event.key == pygame.K_d:
-                    # was facing left
-                    if x_scale < 0:
-                        self.entity.transform.scale_by(-x_scale, y_scale)
-
             # check that we are grounded- if so then JUMP
             if event.key == pygame.K_SPACE and self.grounded:
                 self.entity.rigid_body.velocity.y = -self.v_speed
@@ -216,8 +203,6 @@ class PlayerPlatformMovement(BehaviorScript):
                 self.moving = False
 
     def collision_event(self, other_collider):
-
-        tag = other_collider.entity.tag
 
         # collided with a wall, floor, platform
         if self.entity.world.is_ground(other_collider.entity):
@@ -317,9 +302,8 @@ class PlayerClimbing(BehaviorScript):
         if self.climbing and not self.colliding_with_ladder():
             self.climbing = False
 
-            # reset the collider for side scrolling
-            xs = self.entity.transform.scale.x
-            self.entity.collider.set_offset(-12.0*xs, 10.0)
+            # reset the collider offset for side scrolling
+            self.entity.collider.set_offset(-12.0, 10.0)
 
         # detect if the player wants to climb the ladder
         if keys[pygame.K_w]:
