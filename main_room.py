@@ -302,6 +302,10 @@ class PlatformWorld(World):
         self.lamp_source = None
         self.crates = list()
 
+        # object that determine if the player should be grounded
+        # when collided on
+        self.ground = list()
+
         self.monster = None
         self.monster_light = None
 
@@ -384,6 +388,10 @@ class PlatformWorld(World):
 
             elif e.tag == "book shelf":
                 self.book_shelves.append(e)
+
+            # construct ground objects list
+            elif e.tag == "floor" or e.tag == "box" or e.tag == "cabin" or e.tag == "wall" or e.tag == "platform":
+                self.ground.append(e)
 
         self.add_script(ExitMainRoom())
 
