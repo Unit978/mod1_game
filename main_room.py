@@ -390,7 +390,7 @@ class PlatformWorld(World):
                 self.book_shelves.append(e)
 
             # construct ground objects list
-            elif e.tag == "floor" or e.tag == "box" or e.tag == "cabin" or e.tag == "wall" or e.tag == "platform":
+            elif self.is_ground(e):
                 self.ground.append(e)
 
         self.add_script(ExitMainRoom())
@@ -951,6 +951,11 @@ class PlatformWorld(World):
         self.monster.remove_component(Renderer.tag)
         self.monster.remove_component(BoxCollider.tag)
         self.monster.remove_script("monster movement")
+
+    # test to see if the entity is considered as ground in the world
+    def is_ground(self, entity):
+        e = entity
+        return e.tag == "floor" or e.tag == "box" or e.tag == "cabin" or e.tag == "wall" or e.tag == "platform"
 
 # p = PlatformWorld()
 # engine.set_world(p)
