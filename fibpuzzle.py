@@ -3,9 +3,8 @@ from world import *
 from engine import *
 from components import BehaviorScript
 from components import WorldScript
-from copy import copy
 
-Engine(10, 10)
+engine = Engine(1200, 700)
 
 # sound effect to play once the puzzle is completed
 puzzle_finished_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
@@ -129,7 +128,7 @@ class PlayerFibMovement(BehaviorScript):
             self.move_crate()
 
         # player left crate bounds
-        if not self.check_if_near_crate()[0]:
+        if not self.check_if_near_crate()[0] or not self.colliding_with_selected_crate():
             self.selected_crate = None
 
     def take_input(self, event):
@@ -193,6 +192,33 @@ class PlayerFibMovement(BehaviorScript):
         self.selected_crate.transform.position.x += v.x * dt * move_x
         self.selected_crate.transform.position.y += v.y * dt * move_y
 
+    def colliding_with_selected_crate(self):
+
+        if self.selected_crate is None:
+            return False
+
+        result = False
+
+        player = self.entity
+        crate = self.selected_crate
+
+        temp_player_box = player.collider.box
+        temp_crate_box = crate.collider.box
+
+        # use the tolerance hit boxes to detect collision
+        player.collider.box = player.collider.tolerance_hitbox
+        crate.collider.box = crate.collider.tolerance_hitbox
+
+        # use the tolerance hit boxes to detect collision
+        if PhysicsSystem.box2box_collision(player.collider, crate.collider):
+            result = True
+
+        # # reset the collider boxes to the original ones
+        player.collider.box = temp_player_box
+        crate.collider.box = temp_crate_box
+
+        return result
+
     def check_if_near_crate(self):
 
         result = (False, None)
@@ -200,24 +226,21 @@ class PlayerFibMovement(BehaviorScript):
         # check if the player is near a box
         for crate in self.entity.world.boxes:
             player = self.entity
-            other = crate
 
-            temp_player_box = copy(player.collider.box)
-            temp_other_box = copy(other.collider.box)
+            temp_player_box = player.collider.box
+            temp_crate_box = crate.collider.box
 
             # use the tolerance hit boxes to detect collision
             player.collider.box = player.collider.tolerance_hitbox
-            other.collider.box = other.collider.tolerance_hitbox
+            crate.collider.box = crate.collider.tolerance_hitbox
 
-            player.collider.box.center = temp_player_box.center
-            other.collider.box.center = temp_other_box.center
-
-            if PhysicsSystem.box2box_collision(player.collider, other.collider):
+            # use the tolerance hit boxes to detect collision
+            if PhysicsSystem.box2box_collision(player.collider, crate.collider):
                 result = (True, crate)
 
-            # reset the collider boxes to the original ones
+            # # reset the collider boxes to the original ones
             player.collider.box = temp_player_box
-            other.collider.box = temp_other_box
+            crate.collider.box = temp_crate_box
 
         return result
 
@@ -360,5 +383,7 @@ class FibWorld(World):
         mixer.music.play(-1)
         mixer.music.set_volume(0.3)
 
-# engine.set_world(FibWorld())
-# engine.run()
+f = FibWorld()
+engine.set_world(f)
+engine.worlds.append(f)
+engine.run()
