@@ -53,21 +53,20 @@ class ExitMainRoom(WorldScript):
         self.puzzles_done = False
 
     def update(self):
-        pass
-        # # check to see of the puzzles are finished
-        # if not self.puzzles_done:
-        #     self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.maze_room.puzzle
-        #
-        # # elevator hasnt been triggered yet
-        # elevator_cabin = self.world.get_entity_by_tag("cabin")
-        # if self.puzzles_done and elevator_cabin.collider.is_trigger:
-        #     elevator_cabin = self.world.get_entity_by_tag("cabin")
-        #
-        #     # on the elevator cabin
-        #     if PhysicsSystem.box2box_collision(self.world.player.collider, elevator_cabin.collider):
-        #         monster_appearance_sfx.play()
-        #         elevator_cabin.collider.is_trigger = False
-        #         elevator_cabin.collider.treat_as_dynamic = True
+        # check to see of the puzzles are finished
+        if not self.puzzles_done:
+            self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.maze_room.puzzle
+
+        # elevator hasn't been triggered yet
+        elevator_cabin = self.world.get_entity_by_tag("cabin")
+        if self.puzzles_done and elevator_cabin.collider.is_trigger:
+            elevator_cabin = self.world.get_entity_by_tag("cabin")
+
+            # on the elevator cabin
+            if PhysicsSystem.box2box_collision(self.world.player.collider, elevator_cabin.collider):
+                monster_appearance_sfx.play()
+                elevator_cabin.collider.is_trigger = False
+                elevator_cabin.collider.treat_as_dynamic = True
 
 
 class MoveCabin(BehaviorScript):
@@ -101,19 +100,19 @@ class MonsterMovement(BehaviorScript):
 
     def update(self):
 
-        player = self.entity.world.player
+        # follow the player if he is alive
+        if not self.killed_player:
+            player = self.entity.world.player
 
-        direction = player.transform.position - self.entity.transform.position
-        direction.normalize()
+            direction = player.transform.position - self.entity.transform.position
+            direction.normalize()
 
-        self.velocity = direction * self.speed
+            dt = self.entity.world.engine.delta_time
 
-        dt = self.entity.world.engine.delta_time
+            self.entity.transform.position += direction * self.speed * dt
 
-        self.entity.transform.position += self.velocity * dt
-
-        # make the lamp follow the monster
-        self.entity.world.monster_light.transform.position = self.entity.transform.position
+            # make the lamp follow the monster
+            self.entity.world.monster_light.transform.position = self.entity.transform.position
 
     def take_input(self, event):
 
@@ -137,10 +136,8 @@ class MonsterMovement(BehaviorScript):
                 # display a red cross over the player to signify that he is dead
                 img = pygame.image.load("assets/images/effects/blood_splatter.png").convert_alpha()
                 splatter = self.entity.world.create_renderable_object(img)
-                splatter.renderer.is_static = True
                 splatter.renderer.depth = -100
-                splatter.transform.position.x = self.entity.transform.position.x
-                splatter.transform.position.y = self.entity.transform.position.y
+                splatter.transform.position = self.entity.transform.position
                 self.killed_player = True
 
 
@@ -198,8 +195,10 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 100.0
-        self.max_time_monster = 8.0
+        # self.max_lamp_life = 100.0
+        # self.max_time_monster = 8.0
+        self.max_lamp_life = 3.0
+        self.max_time_monster = 3.0
 
         # lamp light life in seconds
         self.lamp_life = self.max_lamp_life
@@ -210,25 +209,24 @@ class HandleLightLife(BehaviorScript):
         self.monster_spawned = False
 
     def update(self):
-        pass
-        # # reduce lamp strength at every mutliple of 5
-        # if self.lamp_life > 0 and int(self.lamp_life) % 5 == 0:
-        #     scale = self.lamp_life / self.max_lamp_life
-        #     self.entity.world.lamp_source.transform.scale_by(scale, scale)
-        #
-        # # spawn monster
-        # if self.monster_appearance_timer < 0 and not self.monster_spawned:
-        #     monster_appearance_sfx.play()
-        #     self.entity.world.initialize_monster()
-        #     self.monster_spawned = True
-        #
-        # # start secondary timer for monster to appear
-        # if self.lamp_life < 0 < self.monster_appearance_timer:
-        #     self.monster_appearance_timer -= self.entity.world.engine.delta_time
-        #
-        # # reduce lamp life
-        # if self.lamp_life > 0:
-        #     self.lamp_life -= self.entity.world.engine.delta_time
+        # reduce lamp strength at every mutliple of 5
+        if self.lamp_life > 0 and int(self.lamp_life) % 5 == 0:
+            scale = self.lamp_life / self.max_lamp_life
+            self.entity.world.lamp_source.transform.scale_by(scale, scale)
+
+        # spawn monster
+        if self.monster_appearance_timer < 0 and not self.monster_spawned:
+            monster_appearance_sfx.play()
+            self.entity.world.initialize_monster()
+            self.monster_spawned = True
+
+        # start secondary timer for monster to appear
+        if self.lamp_life < 0 < self.monster_appearance_timer:
+            self.monster_appearance_timer -= self.entity.world.engine.delta_time
+
+        # reduce lamp life
+        if self.lamp_life > 0:
+            self.lamp_life -= self.entity.world.engine.delta_time
 
     def take_input(self, event):
 
@@ -911,7 +909,7 @@ class PlatformWorld(World):
         ladder.collider.is_trigger = True
         ladder.transform.position = Vector2(x, y)
 
-        new_w = ladder.collider.box.w - 75
+        new_w = ladder.collider.box.w - 90
         new_h = ladder.collider.box.h - 50
         ladder.collider.set_box(new_w, new_h)
 
