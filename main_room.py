@@ -6,7 +6,7 @@ from scripts import *
 from utility import *
 from state_machine import *
 
-Engine(10, 10)
+engine = Engine(1200, 700)
 
 monster_appearance_sfx = mixer.Sound("assets/sound/piano_low_key.wav")
 
@@ -17,9 +17,6 @@ class BookShelfInteraction(BehaviorScript):
         super(BookShelfInteraction, self).__init__("book shelf interaction")
 
         self.showing_hint = False
-
-    def update(self):
-        pass
 
     def take_input(self, event):
 
@@ -56,21 +53,21 @@ class ExitMainRoom(WorldScript):
         self.puzzles_done = False
 
     def update(self):
-
-        # check to see of the puzzles are finished
-        if not self.puzzles_done:
-            self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.maze_room.puzzle
-
-        # elevator hasnt been triggered yet
-        elevator_cabin = self.world.get_entity_by_tag("cabin")
-        if self.puzzles_done and elevator_cabin.collider.is_trigger:
-            elevator_cabin = self.world.get_entity_by_tag("cabin")
-
-            # on the elevator cabin
-            if PhysicsSystem.box2box_collision(self.world.player.collider, elevator_cabin.collider):
-                monster_appearance_sfx.play()
-                elevator_cabin.collider.is_trigger = False
-                elevator_cabin.collider.treat_as_dynamic = True
+        pass
+        # # check to see of the puzzles are finished
+        # if not self.puzzles_done:
+        #     self.puzzles_done = self.world.engine.game.fib_room.puzzle_finished and self.world.engine.game.maze_room.puzzle
+        #
+        # # elevator hasnt been triggered yet
+        # elevator_cabin = self.world.get_entity_by_tag("cabin")
+        # if self.puzzles_done and elevator_cabin.collider.is_trigger:
+        #     elevator_cabin = self.world.get_entity_by_tag("cabin")
+        #
+        #     # on the elevator cabin
+        #     if PhysicsSystem.box2box_collision(self.world.player.collider, elevator_cabin.collider):
+        #         monster_appearance_sfx.play()
+        #         elevator_cabin.collider.is_trigger = False
+        #         elevator_cabin.collider.treat_as_dynamic = True
 
 
 class MoveCabin(BehaviorScript):
@@ -139,11 +136,11 @@ class MonsterMovement(BehaviorScript):
 
                 # display a red cross over the player to signify that he is dead
                 img = pygame.image.load("assets/images/effects/blood_splatter.png").convert_alpha()
-                cross = self.entity.world.create_renderable_object(img)
-                cross.renderer.is_static = True
-                cross.renderer.depth = -100
-                cross.transform.position.x = self.entity.transform.position.x
-                cross.transform.position.y = self.entity.transform.position.y
+                splatter = self.entity.world.create_renderable_object(img)
+                splatter.renderer.is_static = True
+                splatter.renderer.depth = -100
+                splatter.transform.position.x = self.entity.transform.position.x
+                splatter.transform.position.y = self.entity.transform.position.y
                 self.killed_player = True
 
 
@@ -201,7 +198,7 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        self.max_lamp_life = 90.0
+        self.max_lamp_life = 100.0
         self.max_time_monster = 8.0
 
         # lamp light life in seconds
@@ -213,25 +210,25 @@ class HandleLightLife(BehaviorScript):
         self.monster_spawned = False
 
     def update(self):
-
-        # reduce lamp strength at every mutliple of 5
-        if self.lamp_life > 0 and int(self.lamp_life) % 5 == 0:
-            scale = self.lamp_life / self.max_lamp_life
-            self.entity.world.lamp_source.transform.scale_by(scale, scale)
-
-        # spawn monster
-        if self.monster_appearance_timer < 0 and not self.monster_spawned:
-            monster_appearance_sfx.play()
-            self.entity.world.initialize_monster()
-            self.monster_spawned = True
-
-        # start secondary timer for monster to appear
-        if self.lamp_life < 0 < self.monster_appearance_timer:
-            self.monster_appearance_timer -= self.entity.world.engine.delta_time
-
-        # reduce lamp life
-        if self.lamp_life > 0:
-            self.lamp_life -= self.entity.world.engine.delta_time
+        pass
+        # # reduce lamp strength at every mutliple of 5
+        # if self.lamp_life > 0 and int(self.lamp_life) % 5 == 0:
+        #     scale = self.lamp_life / self.max_lamp_life
+        #     self.entity.world.lamp_source.transform.scale_by(scale, scale)
+        #
+        # # spawn monster
+        # if self.monster_appearance_timer < 0 and not self.monster_spawned:
+        #     monster_appearance_sfx.play()
+        #     self.entity.world.initialize_monster()
+        #     self.monster_spawned = True
+        #
+        # # start secondary timer for monster to appear
+        # if self.lamp_life < 0 < self.monster_appearance_timer:
+        #     self.monster_appearance_timer -= self.entity.world.engine.delta_time
+        #
+        # # reduce lamp life
+        # if self.lamp_life > 0:
+        #     self.lamp_life -= self.entity.world.engine.delta_time
 
     def take_input(self, event):
 
@@ -370,7 +367,7 @@ class PlatformWorld(World):
         render = self.get_system(RenderSystem.tag)
         render.camera = self.create_entity()
         render.camera.add_component(Transform(Vector2(0, 0)))
-        render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
+        render.camera.add_script(CameraFollow("camera follow", self.player.transform, w, h))
 
         # start the background music and set it to loop forever
         mixer.music.play(-1)
@@ -947,7 +944,8 @@ class PlatformWorld(World):
         self.monster.remove_component(BoxCollider.tag)
         self.monster.remove_script("monster movement")
 
-
-# engine.set_world(PlatformWorld())
+# p = PlatformWorld()
+# engine.set_world(p)
+# engine.worlds.append(p)
 # engine.run()
 #
