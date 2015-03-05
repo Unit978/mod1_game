@@ -5,8 +5,6 @@ from util_math import Vector2
 
 from systems import PhysicsSystem
 
-from copy import copy
-
 
 class CameraFollow(BehaviorScript):
 
@@ -222,7 +220,7 @@ class PlayerPlatformMovement(BehaviorScript):
         tag = other_collider.entity.tag
 
         # collided with a wall, floor, platform
-        if tag == "wall" or tag == "floor" or tag == "platform" or tag == "box" or tag == "cabin":
+        if self.entity.world.is_ground(other_collider.entity):
 
             # hit from the top which means that this collider bottom side was hit by the other collider
             if PhysicsSystem.calc_box_hit_orientation(self.entity.collider, other_collider) == PhysicsSystem.bottom:
@@ -232,25 +230,18 @@ class PlayerPlatformMovement(BehaviorScript):
 
         self.grounded = False
 
-        # iterate through all the entities of the world
-        for other in self.entity.world.entity_manager.entities:
+        # iterate through object considered as ground
+        for other in self.entity.world.ground:
 
-            # make sure it is not itself
-            if self.entity is not other:
+            player = self.entity
 
-                # check if the player collided with a wall, box, or platform
-                tag = other.tag
-                if tag == "wall" or tag == "platform" or tag == "box" or tag == "floor" or tag == "cabin":
+            # if the player collided with an element considered as ground, then ground the player
+            if PhysicsSystem.tolerance_collision(player.collider, other.collider):
 
-                    player = self.entity
-
-                    # if the player collided with an element considered as ground, then ground the player
-                    if PhysicsSystem.tolerance_collision(player.collider, other.collider):
-
-                        # check orientation of the collision
-                        orientation = PhysicsSystem.calc_box_hit_orientation
-                        if orientation(player.collider, other.collider) == PhysicsSystem.bottom:
-                            self.grounded = True
+                # check orientation of the collision
+                orientation = PhysicsSystem.calc_box_hit_orientation
+                if orientation(player.collider, other.collider) == PhysicsSystem.bottom:
+                    self.grounded = True
 
     def check_if_near_crate(self):
 
