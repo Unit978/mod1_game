@@ -371,6 +371,6 @@ class PlayerClimbing(BehaviorScript):
     def colliding_with_ladder(self):
         # check if the player is colliding with a ladder
         for ladder in self.entity.world.ladders:
-            if PhysicsSystem.box2box_collision(self.entity.collider, ladder.collider):
+            if PhysicsSystem.tolerance_collision(self.entity.collider, ladder.collider):
                 return True
         return False
