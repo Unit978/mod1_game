@@ -15,9 +15,10 @@ class CheckBoxes(WorldScript):
         def __init__(self):
             super(CheckBoxes, self).__init__("check boxes")
                 
-            #list of coordinates of where boxes are supposed to be
+            # list of coordinates of where boxes are supposed to be
             self.boxCoordinates = dict()
-            #450, 275 500, 275 475, 200 350, 225
+
+            # 450, 275 500, 275 475, 200 350, 225
             # the correct position of boxes with a boolean condition
             # to check if a box has been snapped into place
             self.boxCoordinates["pbox1"] = [Vector2(526, 294), False]
@@ -383,7 +384,7 @@ class FibWorld(World):
         mixer.music.play(-1)
         mixer.music.set_volume(0.3)
 
-f = FibWorld()
-engine.set_world(f)
-engine.worlds.append(f)
-engine.run()
+# f = FibWorld()
+# engine.set_world(f)
+# engine.worlds.append(f)
+# engine.run()
