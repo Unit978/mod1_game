@@ -852,7 +852,7 @@ class Maze(World):
         render = self.get_system(RenderSystem.tag)
         render.camera = self.create_entity()
         render.camera.add_component(Transform(Vector2(0, 0)))
-        render.camera.add_script(CameraFollow("cam follow", self.player.transform, w, h))
+        render.camera.add_script(CameraFollow("camera follow", self.player.transform, w, h))
         # ====================================Construct Maze======================================
         # create levers to be triggered by player
 
