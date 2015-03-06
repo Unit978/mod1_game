@@ -93,7 +93,7 @@ class MonsterMovement(BehaviorScript):
 
     def __init__(self):
         super(MonsterMovement, self).__init__("monster movement")
-        self.speed = 260
+        self.speed = 290
         self.velocity = Vector2(0, 0)
 
         self.killed_player = False
@@ -195,10 +195,8 @@ class HandleLightLife(BehaviorScript):
     def __init__(self):
         super(HandleLightLife, self).__init__("handle light life")
 
-        # self.max_lamp_life = 100.0
-        # self.max_time_monster = 8.0
-        self.max_lamp_life = 3.0
-        self.max_time_monster = 3.0
+        self.max_lamp_life = 100.0
+        self.max_time_monster = 8.0
 
         # lamp light life in seconds
         self.lamp_life = self.max_lamp_life
@@ -533,6 +531,7 @@ class PlatformWorld(World):
         img = pygame.image.load(path + "eye_duck.png").convert_alpha()
         background = self.create_renderable_object(img)
         background.renderer.pivot = Vector2(0, 0)
+        #background = self.create_box_collider_object()
         background.renderer.depth = 100
         background.transform.position = Vector2(200, -300)
 
