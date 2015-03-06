@@ -18,6 +18,8 @@ class BookShelfInteraction(BehaviorScript):
 
         self.showing_hint = False
 
+        self.mouse_rect = Rect(0, 0, 5, 5)
+
     def take_input(self, event):
 
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -27,7 +29,14 @@ class BookShelfInteraction(BehaviorScript):
                 x_mouse = pygame.mouse.get_pos()[0]
                 y_mouse = pygame.mouse.get_pos()[1]
 
-                mouse_rect = Rect(x_mouse, y_mouse, 5, 5)
+                camera_pos = self.entity.world.get_system(RenderSystem.tag).camera.transform.position
+
+                # adjust to the camera
+                x_mouse += camera_pos.x
+                y_mouse += camera_pos.y
+
+                # center on the mouse
+                self.mouse_rect.center = (x_mouse, y_mouse)
 
                 for book_shelf in self.entity.world.book_shelves:
 
@@ -35,7 +44,7 @@ class BookShelfInteraction(BehaviorScript):
                     if PhysicsSystem.box2box_collision(self.entity.collider, book_shelf.collider):
 
                         # player clicked on book shelf
-                        if mouse_rect.colliderect(book_shelf.collider.box):
+                        if self.mouse_rect.colliderect(book_shelf.collider.box):
                             self.showing_hint = True
 
                             self.entity.world.engine.gui.add_widget(self.entity.world.text)
