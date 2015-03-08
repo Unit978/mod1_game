@@ -340,7 +340,7 @@ class PlatformWorld(World):
         self.height = 1100
 
         # setup the render system for a dark environment
-        #self.get_system(RenderSystem.tag).simulate_dark_env = True
+        self.get_system(RenderSystem.tag).simulate_dark_env = True
         self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h), pygame.HWSURFACE, 32).convert()
 
         # triggers to the other worlds
@@ -418,45 +418,45 @@ class PlatformWorld(World):
         lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_small_mask.png").convert_alpha()
         lamp_img = pygame.image.load("assets/images/environment/lamp.png").convert_alpha()
 
-        # # LAMP AT WALL A
-        # lamp = self.create_renderable_object(lamp_img)
-        # lamp.transform.position = Vector2(185, 160)
-        #
-        # lamp_light = self.create_renderable_object(lamp_light_img)
-        # lamp_light.transform.position = Vector2(185, 160)
-        # set_lamp_light_attributes(lamp_light, render_sys)
-        #
-        # # LAMP AT PLATFORM B
-        # lamp = self.create_renderable_object(lamp_img)
-        # lamp.transform.position = Vector2(600, 415)
-        #
-        # lamp_light = self.create_renderable_object(lamp_light_img)
-        # lamp_light.transform.position = Vector2(600, 415)
-        # set_lamp_light_attributes(lamp_light, render_sys)
-        #
-        # # LAMP AT PLATFORM F
-        # lamp = self.create_renderable_object(lamp_img)
-        # lamp.transform.position = Vector2(2000, -20)
-        #
-        # lamp_light = self.create_renderable_object(lamp_light_img)
-        # lamp_light.transform.position = Vector2(2000, -20)
-        # set_lamp_light_attributes(lamp_light, render_sys)
-        #
-        # # OVER SAW
-        # lamp = self.create_renderable_object(lamp_img)
-        # lamp.transform.position = Vector2(2800, 200)
-        #
-        # lamp_light = self.create_renderable_object(lamp_light_img)
-        # lamp_light.transform.position = Vector2(2800, 200)
-        # set_lamp_light_attributes(lamp_light, render_sys)
-        #
-        # # At right end of the level
-        # lamp = self.create_renderable_object(lamp_img)
-        # lamp.transform.position = Vector2(4550, 380)
-        #
-        # lamp_light = self.create_renderable_object(lamp_light_img)
-        # lamp_light.transform.position = Vector2(4550, 380)
-        # set_lamp_light_attributes(lamp_light, render_sys)
+        # LAMP AT WALL A
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(185, 160)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(185, 160)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # LAMP AT PLATFORM B
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(600, 415)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(600, 415)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # LAMP AT PLATFORM F
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(2000, -20)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(2000, -20)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # OVER SAW
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(2800, 200)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(2800, 200)
+        set_lamp_light_attributes(lamp_light, render_sys)
+
+        # At right end of the level
+        lamp = self.create_renderable_object(lamp_img)
+        lamp.transform.position = Vector2(4550, 380)
+
+        lamp_light = self.create_renderable_object(lamp_light_img)
+        lamp_light.transform.position = Vector2(4550, 380)
+        set_lamp_light_attributes(lamp_light, render_sys)
 
     def load_saw(self):
 
@@ -689,8 +689,6 @@ class PlatformWorld(World):
         set_floor_attributes(floor_c)
 
     def load_ceilings(self):
-
-        ceil_color = (50, 50, 50)
 
         w = self.engine.display.get_width()
         floor_tile = pygame.image.load("assets/images/floors/floor_tile.png").convert_alpha()
