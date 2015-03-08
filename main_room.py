@@ -340,7 +340,7 @@ class PlatformWorld(World):
         self.height = 1100
 
         # setup the render system for a dark environment
-        self.get_system(RenderSystem.tag).simulate_dark_env = True
+        #self.get_system(RenderSystem.tag).simulate_dark_env = True
         self.get_system(RenderSystem.tag).blit_buffer = pygame.Surface((w, h), pygame.HWSURFACE, 32).convert()
 
         # triggers to the other worlds
@@ -409,6 +409,7 @@ class PlatformWorld(World):
         self.monster_light = self.create_renderable_object(lamp_light_img)
         self.monster_light.renderer.depth = 10000
 
+        # lamp light for the player
         large_lamp_light_img = pygame.image.load("assets/images/lights/lamp_light_mask.png").convert_alpha()
         self.lamp_source = self.create_renderable_object(large_lamp_light_img)
         self.lamp_source.renderer.depth = 10000
@@ -542,7 +543,7 @@ class PlatformWorld(World):
         background.renderer.pivot = Vector2(0, 0)
         #background = self.create_box_collider_object()
         background.renderer.depth = 100
-        background.transform.position = Vector2(200, -300)
+        background.transform.position = Vector2(200, 0)
 
         img = pygame.image.load(path + "horse.png").convert()
         background = self.create_renderable_object(img)
@@ -550,20 +551,20 @@ class PlatformWorld(World):
         background.renderer.depth = 100
 
         x = 2600
-        background.transform.position = Vector2(x, -300)
+        background.transform.position = Vector2(x, -200)
 
         w = img.get_width()
         img = pygame.image.load(path + "all_toys.png").convert()
         background = self.create_renderable_object(img)
         background.renderer.pivot = Vector2(0, 0)
         background.renderer.depth = 100
-        background.transform.position = Vector2(x + w, -300)
+        background.transform.position = Vector2(x + w, -200)
 
         img = pygame.image.load(path + "no_toys.png").convert()
         background = self.create_renderable_object(img)
         background.renderer.pivot = Vector2(0, 0)
         background.renderer.depth = 100
-        background.transform.position = Vector2(1300, -300)
+        background.transform.position = Vector2(1300, 50)
 
     def load_ladders(self):
         path = "assets/images/ladders/"
