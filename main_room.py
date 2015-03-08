@@ -537,14 +537,14 @@ class PlatformWorld(World):
         background.renderer.is_static = True
 
         path = "assets/images/backgrounds/"
-        img = pygame.image.load(path + "eye_duck.png").convert_alpha()
+        img = pygame.image.load(path + "eye_duck.png").convert()
         background = self.create_renderable_object(img)
         background.renderer.pivot = Vector2(0, 0)
         #background = self.create_box_collider_object()
         background.renderer.depth = 100
         background.transform.position = Vector2(200, -300)
 
-        img = pygame.image.load(path + "horse.png").convert_alpha()
+        img = pygame.image.load(path + "horse.png").convert()
         background = self.create_renderable_object(img)
         background.renderer.pivot = Vector2(0, 0)
         background.renderer.depth = 100
@@ -553,7 +553,7 @@ class PlatformWorld(World):
         background.transform.position = Vector2(x, -300)
 
         w = img.get_width()
-        img = pygame.image.load(path + "all_toys.png").convert_alpha()
+        img = pygame.image.load(path + "all_toys.png").convert()
         background = self.create_renderable_object(img)
         background.renderer.pivot = Vector2(0, 0)
         background.renderer.depth = 100
